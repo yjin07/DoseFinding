@@ -78,14 +78,27 @@ siderbar <- dashboardSidebar(
           )
         ),
       ),
+      p("Response Type:", style = "margin: 10px 5px 0px;font-weight: bold;"),
+      div(
+        id = "sidebar_selection_container",
+        radioGroupButtons(
+          inputId = "responseType",
+          label = NULL, 
+            choices = c("Continuous", "Binary"),
+            # checkIcon = list(yes = icon("square-check"), no = icon("square")),
+          status = "info", justified = TRUE, direction = "horizontal",
+          width = '250px'
+        ),
+      ),
       p("Model:", style = "margin: 10px 5px 0px;font-weight: bold;"),
       div(
         id = "sidebar_selection_container",
-        selectInput("model", label = NULL, 
+        selectInput("model", label = NULL, # choices = c()
           choices = list("Sigmoid-Emax" = "sEmax", "Emax" = "emax", "Exponential" = "expo", 
                           "Beta" = "beta", "Linear" = "linear", "Linear-Log"="linearLog",
                           "Logistic" = "logistic", "Quadratic" = "quad"), 
-          selected = "Sigmoid-Emax")
+          selected = "Sigmoid-Emax"
+          )
       )
       # menuItem("Source code", icon = icon("file-code-o"), 
       #     href = "https://github.com/rstudio/shinydashboard/")
@@ -137,7 +150,21 @@ body <- dashboardBody(
                 tabBox(
                   title = "Add Title Here", width = 12, height = 800,
                   tabPanel(
-                    "Data", "Add Data content here.",
+                    "Description",
+                    h2("Data preview"),
+                    fluidRow(
+                      box(
+                        width = 4,
+                        tableOutput("data_preview")
+                        ),
+                      box(
+                        width = 8,
+                        verbatimTextOutput("data_description")
+                      )
+                    )
+                  ),
+                  tabPanel(
+                    "View", "Add Data content here.",
                     box(
                       title = "Source Data", # status = "primary", 
                       solidHeader = TRUE, width = 6, # height = 600,

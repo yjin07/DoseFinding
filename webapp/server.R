@@ -1,6 +1,19 @@
 
 
-server <- function(input, output) {
+server <- function(input, output, session) {
+
+  # observeEvent(input$responseType, {
+  #   if (input$responseType == 'Continuous') {
+  #     updateSelectInput(session, "model", label = NULL,
+  #                 choices = list("Sigmoid-Emax" = "sEmax", "Emax" = "emax", "Exponential" = "expo", "Beta" = "beta", "Linear" = "linear", "Linear-Log"="linearLog",
+  #                 "Logistic" = "logistic", "Quadratic" = "quad"))
+  #   } else {
+  #     updateSelectInput(session, "model", label = NULL,
+  #                 choices = list("Logistic" = "logistic"))
+  #   }
+  # })
+
+
   # ! ---------------------
   # ! Tab: simulate
   # ! ---------------------
@@ -59,6 +72,17 @@ server <- function(input, output) {
 
   output$exposure_table_real <- renderDT({
     datatable(exposure_data)
+  })
+
+  output$data_preview <- renderTable({
+    head(exposure_data, 10)
+  })
+
+  output$data_description <- renderPrint({
+    paste("This is a description of the data.")
+    exposure_data1 <- exposure_data
+    exposure_data1$Dose <- factor(exposure_data1$Dose, levels = c("Placebo", "150 mg", "300 mg", "600 mg"))
+    summary(exposure_data1)
   })
 
   random_plot <- generate_plots(exposure_data, exposure_data_all, er_summary, n_quantile)

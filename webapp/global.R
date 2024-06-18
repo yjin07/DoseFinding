@@ -7,6 +7,7 @@ library(binom)
 library(patchwork)
 library(shinyjs)
 library(shinycssloaders)
+library(shinyWidgets)
 
 
 generate_data <- function() {

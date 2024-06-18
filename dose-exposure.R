@@ -40,7 +40,7 @@ lines(dose, resp)
 v_dose <- 1:7
 dose_seq <- dose[v_dose]
 p_true <- resp[v_dose]
-n <- c(3,3,6,8,12,18,10,6,3,3)[v_dose]*10    # TODO: why this choice of n?
+n <- c(3,3,6,8,12,18,10,6,3,3)[v_dose]   
 
 ds <- NULL
 rspd <- NULL
