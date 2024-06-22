@@ -1,7 +1,7 @@
 
 
 server <- function(input, output, session) {
-
+  
   # observeEvent(input$responseType, {
   #   if (input$responseType == 'Continuous') {
   #     updateSelectInput(session, "model", label = NULL,

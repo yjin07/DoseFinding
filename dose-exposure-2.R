@@ -1,12 +1,8 @@
-# rm(list=ls())
+rm(list=ls()) # TODO:
 
-set.seed(123456)
+source("ermodels.R")
+library(dplyr)
 
-####---- basic functions ----
-
-logit <- function(p) {log(p / (1 - p))}
-
-inv_logit <- function(y) {1 / (1 + exp(-y))}
 
 #===========================================================================
 # For different models, please refer to: ??DoseFinding::drmodels
@@ -18,10 +14,10 @@ inv_logit <- function(y) {1 / (1 + exp(-y))}
 
 # Model: logit(P(Y=1)) = E_0 + (E_max * d^h) / (ED50^h + d^h)
 
-sigEmax <- function(d, e0, emax, ed50, h){
-  theta <- e0 + emax*(d^h/(ed50^h + d^h))
-  return(theta)
-}
+# sigEmax <- function(d, e0, emax, ed50, h){
+#   theta <- e0 + emax*(d^h/(ed50^h + d^h))
+#   return(theta)
+# }
 
 # specify model parameter
 e0 <- logit(0.1)
@@ -33,8 +29,8 @@ h <- 3
 dose <- c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1)
 logit_resp <- mapply(sigEmax, dose, e0, emax, ed50, h)
 resp <- inv_logit(logit_resp)
-plot(dose, resp)
-lines(dose, resp)
+# plot(dose, resp)
+# lines(dose, resp) 
 
 # generate binary data using the model
 v_dose <- 1:7
@@ -62,31 +58,49 @@ for(i in 1:length(n)){
 df = data.frame(dose=ds, Response = rspd)
 obs.sigEmax.orr <- rspd_obs
 
+
+# * ----------------------------------------
+# set.seed(9981)
+# cc <- c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1)
+# n <- c(3,3,6,8,12,18,10,6,3,3)
+# selected <- 1:7
+
+# ds <- cc[selected]
+# nn <- n[selected]
+
+# ds <- rep(ds, nn) + rnorm(sum(nn), 0, 0.01)
+# pr <- inv_logit(sigEmax(ds, e0, emax, ed50, h))
+# df <- data.frame(dose=ds, Response = rbinom(sum(nn), 1, pr)) %>% arrange(dose)
+# head(df)
+# * ----------------------------------------
+
 # log-likelihood function for Sigmoid Emax Model
-loglik_sigEmax <- function(para, data){
-  e0 <- para[1]
-  emax <- para[2]
-  ed50 <- para[3]
-  h <- para[4]
+# loglik_sigEmax <- function(para, data){
+#   e0 <- para[1]
+#   emax <- para[2]
+#   ed50 <- para[3]
+#   h <- para[4]
   
-  log_p_y1 <- NULL
-  log_p_y0 <- NULL
+#   log_p_y1 <- NULL
+#   log_p_y0 <- NULL
   
-  for(i in 1:dim(data)[1]){
-    logit_y1 <- sigEmax(data[i,1], e0, emax, ed50, h)
-    p_y1 <- inv_logit(logit_y1)
-    p_y0 <- 1-p_y1
-    log_p_y1 <- c(log_p_y1, log(p_y1))
-    log_p_y0 <- c(log_p_y0, log(p_y0))
-  }
+#   for(i in 1:dim(data)[1]){
+#     logit_y1 <- sigEmax(data[i,1], e0, emax, ed50, h)
+#     p_y1 <- inv_logit(logit_y1)
+#     p_y0 <- 1-p_y1
+#     log_p_y1 <- c(log_p_y1, log(p_y1))
+#     log_p_y0 <- c(log_p_y0, log(p_y0))
+#   }
   
-  loglik <- as.numeric(data[,2]%*%log_p_y1)+as.numeric((1-data[,2])%*%log_p_y0)
+#   loglik <- as.numeric(data[,2]%*%log_p_y1)+as.numeric((1-data[,2])%*%log_p_y0)
   
-  return(-loglik)
-}
+#   return(-loglik)
+# }
 
 # maximize log-likelihood function i.e. minimize -log-likelihood function
 fit.sigEmax.par <- nlminb(start=c(1, 1, 1, 1), objective=loglik_sigEmax, data=df, lower=c(-Inf, -Inf, 0, 0))$par
+fit.sigEmax.par
+
 fit.sigEmax.e0 <- fit.sigEmax.par[1]
 fit.sigEmax.emax <- fit.sigEmax.par[2]
 fit.sigEmax.ed50 <- fit.sigEmax.par[3]

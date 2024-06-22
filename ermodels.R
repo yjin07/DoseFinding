@@ -6,7 +6,7 @@ sigEmax <- function(cc, e0, eMax, ec50, h) {
 }
 
 Emax <- function(cc, e0, eMax, ec50) {
-    return(e0 + eMax * (cc / (ec50 + cc)))
+    return(e0 + eMax * cc / (ec50 + cc))
 }
 
 Expo <- function(cc, e0, e1, delta) {
@@ -43,6 +43,11 @@ Quadratic <- function(cc, e0, b1, b2) {
 logit <- function(p) {log(p / (1 - p))}
 inv_logit <- function(y) {1 / (1 + exp(-y))}
 
+
+# -----------------------------
+# data[, 1]: exposure
+# data[, 2]: response
+# -----------------------------
 loglik_sigEmax <- function(para, data) {
   e0 <- para[1]
   emax <- para[2]
@@ -84,9 +89,9 @@ loglik_Expo <- function(para, data) {
 loglik_Beta <- function(para, data) {
   e0 <- para[1]
   emax <- para[2]
-  scale <- para[3]
-  delta1 <- para[4]
-  delta2 <- para[5]
+  delta1 <- para[3]
+  delta2 <- para[4]
+  scale <- para[5]
   
   log_p_y1 <- sapply(1:nrow(data), function(i) log(inv_logit(Beta(data[i, 1], e0, emax, delta1, delta2, scale))))
   log_p_y0 <- sapply(1:nrow(data), function(i) log(1 - inv_logit(Beta(data[i, 1], e0, emax, delta1, delta2, scale))))
@@ -109,10 +114,10 @@ loglik_Linear <- function(para, data) {
 loglik_LinearLog <- function(para, data) {
   e0 <- para[1]
   delta <- para[2]
-  offset <- para[3]
+  # offset <- para[3]
   
-  log_p_y1 <- sapply(1:nrow(data), function(i) log(inv_logit(LinearLog(data[i, 1], e0, delta, offset))))
-  log_p_y0 <- sapply(1:nrow(data), function(i) log(1 - inv_logit(LinearLog(data[i, 1], e0, delta, offset))))
+  log_p_y1 <- sapply(1:nrow(data), function(i) log(inv_logit(LinearLog(data[i, 1], e0, delta))))
+  log_p_y0 <- sapply(1:nrow(data), function(i) log(1 - inv_logit(LinearLog(data[i, 1], e0, delta))))
   
   loglik <- sum(data[, 2] * log_p_y1 + (1 - data[, 2]) * log_p_y0)
   return(-loglik)
@@ -144,4 +149,90 @@ loglik_Quadratic <- function(para, data) {
 }
 
 
+# -----------------------------
+# data[, 1]: exposure
+# data[, 2]: response
+# -----------------------------
+ols_sigEmax <- function(para, data) {
+  e0 <- para[1]
+  emax <- para[2]
+  ec50 <- para[3]
+  h <- para[4]
+
+  hat_logy <- sapply(1:nrow(data), function(i) sigEmax(data[i, 1], e0, emax, ec50, h))
+  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  return(sse)
+}
+
+ols_Emax <- function(para, data) {
+  e0 <- para[1]
+  emax <- para[2]
+  ec50 <- para[3]
+
+  hat_logy <- sapply(1:nrow(data), function(i) Emax(data[i, 1], e0, emax, ec50))
+  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  return(sse)
+}
+
+ols_Expo <- function(para, data) {
+  e0 <- para[1]
+  e1 <- para[2]
+  delta <- para[3]
+
+  hat_logy <- sapply(1:nrow(data), function(i) Expo(data[i, 1], e0, e1, delta))
+  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  return(sse)
+}
+
+ols_Beta <- function(para, data) {
+  e0 <- para[1]
+  emax <- para[2]
+  delta1 <- para[3]
+  delta2 <- para[4]
+  scale <- para[5]
+
+  hat_logy <- sapply(1:nrow(data), function(i) Beta(data[i, 1], e0, emax, delta1, delta2, scale))
+  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  return(sse)
+}
+
+ols_Linear <- function(para, data) {
+  e0 <- para[1]
+  delta <- para[2]
+
+  hat_logy <- sapply(1:nrow(data), function(i) Linear(data[i, 1], e0, delta))
+  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  return(sse)
+}
+
+ols_LinearLog <- function(para, data) {
+  e0 <- para[1]
+  delta <- para[2]
+  # offset <- para[3]
+
+  hat_logy <- sapply(1:nrow(data), function(i) LinearLog(data[i, 1], e0, delta))
+  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  return(sse)
+}
+
+ols_Logistic <- function(para, data) {
+  e0 <- para[1]
+  emax <- para[2]
+  ec50 <- para[3]
+  delta <- para[4]
+
+  hat_logy <- sapply(1:nrow(data), function(i) Logistic(data[i, 1], e0, emax, ec50, delta))
+  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  return(sse)
+}
+
+ols_Quadratic <- function(para, data) {
+  e0 <- para[1]
+  beta1 <- para[2]
+  beta2 <- para[3]
+
+  hat_logy <- sapply(1:nrow(data), function(i) Quadratic(data[i, 1], e0, beta1, beta2))
+  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  return(sse)
+}
 

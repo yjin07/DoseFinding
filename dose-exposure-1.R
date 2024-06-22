@@ -228,11 +228,11 @@ for(i in 1:num.sim){
   y=exp(log(top/bottom+E0)+epi)
   data=data.frame(y=y,c=c,d=d)
   data1=data[c(1:20,41:60,81:100),]
-  E0_ini=exp(rnorm(5,mean=log(E0),sd=0.5))
-  EMAX_ini=exp(rnorm(5,mean=log(EMAX),sd=0.5))
+  E0_ini=exp(rnorm(5,mean=log(E0),sd=0.5))                     # * TODO: initialize E0 around the true value !!!
+  EMAX_ini=exp(rnorm(5,mean=log(EMAX),sd=0.5))                 # *       initialize EMAX around the true value !!!
   h_ini=1:5
-  EC50_ini=exp(rnorm(5,mean=log(EC50),sd=0.5))
-  sigma_ini=exp(rnorm(5,mean=log(sigma),sd=0.1))
+  EC50_ini=exp(rnorm(5,mean=log(EC50),sd=0.5))                 # *       initialize EC50 around the true value !!!
+  sigma_ini=exp(rnorm(5,mean=log(sigma),sd=0.1))               # *       initialize sigma around the true value !!!
   beta0_ini=rnorm(5,mean=beta0,sd=0.5)
   beta1_ini=rnorm(5,mean=beta1,sd=0.5)
   
