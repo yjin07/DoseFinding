@@ -4,3 +4,4 @@ app.R
 DoseFinding
 test.R
 cached/*
+.vscode/*
