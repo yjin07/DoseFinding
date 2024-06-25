@@ -215,89 +215,97 @@ par<-array(NA,c(num.sim,7,3))
 par.boot<-array(NA,c(num.sim,boot.num,7,3))
 
 
-for(i in 1:num.sim){
+# for(i in 1:num.sim){
+  i <- 1
+  qqq <- 5
   set.seed(i+40*(qqq-1))
-  logc=rep(0,N)
-  N1=sum(d!=0)
-  logc[d!=0]=beta0+beta1*log(d[d!=0])+rnorm(N1,sd=sigma)
+  logc <- rep(0,N)
+  N1 <- sum(d!=0)                                                       # ? Number of non-zero doses
+  logc[d!=0] <- beta0+beta1*log(d[d!=0])+rnorm(N1,sd=sigma)             # ? generate log(C): log of exposure
   
-  c=exp(logc)
-  top=EMAX*(c^h)
-  bottom=EC50^h+c^h
-  epi=rnorm(N,0,sd=sigma_y)
-  y=exp(log(top/bottom+E0)+epi)
-  data=data.frame(y=y,c=c,d=d)
-  data1=data[c(1:20,41:60,81:100),]
-  E0_ini=exp(rnorm(5,mean=log(E0),sd=0.5))                     # * TODO: initialize E0 around the true value !!!
-  EMAX_ini=exp(rnorm(5,mean=log(EMAX),sd=0.5))                 # *       initialize EMAX around the true value !!!
-  h_ini=1:5
-  EC50_ini=exp(rnorm(5,mean=log(EC50),sd=0.5))                 # *       initialize EC50 around the true value !!!
-  sigma_ini=exp(rnorm(5,mean=log(sigma),sd=0.1))               # *       initialize sigma around the true value !!!
-  beta0_ini=rnorm(5,mean=beta0,sd=0.5)
-  beta1_ini=rnorm(5,mean=beta1,sd=0.5)
-  
-  f1=cbind(E0_ini,EMAX_ini,h_ini,EC50_ini,beta0_ini,beta1_ini,sigma_ini)
-  f2=cbind(E0_ini,EMAX_ini,h_ini,EC50_ini)
-  
-  out1<-apply(f1, 1, nlminb, objective=log_DR_log_normal_LS_EMAX_total_power, data=data,lower=c(1e-8,1e-8,0,1e-8,-Inf,-Inf,0))
-  out2<-apply(f2, 1, nlminb, objective=log_DR_log_normal_LS_EMAX_simple, data=data,lower=c(1e-8,1e-8,0,1e-8))
-  out3<-apply(f2, 1, nlminb, objective=log_DR_log_normal_LS_EMAX_twostep, data=data,lower=c(1e-8,1e-8,0,1e-8))
-  c1=data[data[,3]!=0,2]
-  d1=data[data[,3]!=0,3]
-  fit2<-lm(log(c1)~log(d1))
-  beta0_fit2=fit2$coefficients[1]
-  beta1_fit2=fit2$coefficients[2]
-  sigma_fit2=sqrt(sum(fit2$residuals^2)/fit2$df.residual)
-  print('te')
-  obj1<-rep(NA,5)
-  obj2<-rep(NA,5)
-  obj3<-rep(NA,5)
+  c <- exp(logc)                                                        # ? Exposure
+  top <- EMAX*(c^h); bottom <- EC50^h+c^h; epi=rnorm(N,0,sd=sigma_y)
+  y <- exp(log(top/bottom+E0)+epi)                                      # ? Response FIXME: do not make sense
+  data <- data.frame(y=y,c=c,d=d)                                       
+  data1 <- data[c(1:20,41:60,81:100),]                                  # ! Not used
+
+
+  # ? --------------------
+  # ? (1) Fit ER model
+  # ? --------------------
+  E0_ini <- exp(rnorm(5,mean=log(E0),sd=0.5))                     # * TODO: initialize E0 around the true value !!!
+  EMAX_ini <- exp(rnorm(5,mean=log(EMAX),sd=0.5))                 # *       initialize EMAX around the true value !!!
+  h_ini <-1:5
+  EC50_ini <- exp(rnorm(5,mean=log(EC50),sd=0.5))                 # *       initialize EC50 around the true value !!!
+  sigma_ini <- exp(rnorm(5,mean=log(sigma),sd=0.1))               # *       initialize sigma around the true value !!!
+  beta0_ini <- rnorm(5,mean=beta0,sd=0.5)
+  beta1_ini <- rnorm(5,mean=beta1,sd=0.5)
+  f1 <- cbind(E0_ini,EMAX_ini,h_ini,EC50_ini,beta0_ini,beta1_ini,sigma_ini)
+  f2 <- cbind(E0_ini,EMAX_ini,h_ini,EC50_ini)
+  out1 <- apply(f1, 1, nlminb, objective=log_DR_log_normal_LS_EMAX_total_power, data=data,lower=c(1e-8,1e-8,0,1e-8,-Inf,-Inf,0))
+  out2 <- apply(f2, 1, nlminb, objective=log_DR_log_normal_LS_EMAX_simple, data=data,lower=c(1e-8,1e-8,0,1e-8))
+  out3 <- apply(f2, 1, nlminb, objective=log_DR_log_normal_LS_EMAX_twostep, data=data,lower=c(1e-8,1e-8,0,1e-8))
+
+  # ? --------------------
+  # ? (2) Fit DE model
+  # ? --------------------
+  c1 <- data[data[,3]!=0,2]
+  d1 <- data[data[,3]!=0,3]
+  fit2 <- lm(log(c1)~log(d1))
+  beta0_fit2 <- fit2$coefficients[1]
+  beta1_fit2 <- fit2$coefficients[2]
+  sigma_fit2 <- sqrt(sum(fit2$residuals^2)/fit2$df.residual)
+
+
+  obj1 <- rep(NA,5)
+  obj2 <- rep(NA,5)
+  obj3 <- rep(NA,5)
   for(tt in 1:5){
-    obj1[tt]<-out1[[tt]]$obj
-    obj2[tt]<-out2[[tt]]$obj
-    obj3[tt]<-out3[[tt]]$obj
+    obj1[tt] <- out1[[tt]]$obj
+    obj2[tt] <- out2[[tt]]$obj
+    obj3[tt] <- out3[[tt]]$obj
   }
-  par[i,,1]<-out1[[which.min(obj1)]]$par ###total
-  par[i,,2]<-c(out2[[which.min(obj2)]]$par,NA,NA,NA) ###simple
-  par[i,,3]<-c(out3[[which.min(obj3)]]$par,beta0_fit2,beta1_fit2,sigma_fit2) ###twostep
+  par[i,,1] <- out1[[which.min(obj1)]]$par                                            ###total
+  par[i,,2] <- c(out2[[which.min(obj2)]]$par,NA,NA,NA)                                ###simple
+  par[i,,3] <- c(out3[[which.min(obj3)]]$par,beta0_fit2,beta1_fit2,sigma_fit2)        ###twostep
   
   for(ind.boot in 1:boot.num){
-    boot.ind<-sample(1:N,replace=TRUE)
-    data.boot<-data[boot.ind,]
-    boot.ind1<-sample(1:(N/2),replace=TRUE)
-    data1.boot<-data[boot.ind1,]
+    boot.ind <- sample(1:N,replace=TRUE)
+    data.boot <- data[boot.ind,]
+    boot.ind1 <- sample(1:(N/2),replace=TRUE)
+    data1.boot <- data[boot.ind1,]
     
     ###optimize objective function
     
-    temp1<-nlminb(par[i,,1],objective=log_DR_log_normal_LS_EMAX_total_power, data=data.boot,lower=c(1e-8,1e-8,0,1e-8,-Inf,-Inf,0))
-    temp2<-nlminb(par[i,1:4,2],objective=log_DR_log_normal_LS_EMAX_simple, data=data.boot,lower=c(1e-8,1e-8,0,1e-8))
-    temp3<-nlminb(par[i,1:4,3],objective=log_DR_log_normal_LS_EMAX_twostep, data=data.boot,lower=c(1e-8,1e-8,0,1e-8))
+    temp1 <- nlminb(par[i,,1],objective=log_DR_log_normal_LS_EMAX_total_power, data=data.boot,lower=c(1e-8,1e-8,0,1e-8,-Inf,-Inf,0))
+    temp2 <- nlminb(par[i,1:4,2],objective=log_DR_log_normal_LS_EMAX_simple, data=data.boot,lower=c(1e-8,1e-8,0,1e-8))
+    temp3 <- nlminb(par[i,1:4,3],objective=log_DR_log_normal_LS_EMAX_twostep, data=data.boot,lower=c(1e-8,1e-8,0,1e-8))
     
-    c1=data.boot[data.boot[,3]!=0,2]
-    d1=data.boot[data.boot[,3]!=0,3]
+    c1 <- data.boot[data.boot[,3]!=0,2]
+    d1 <- data.boot[data.boot[,3]!=0,3]
     ###estimate beta1 and beta0 for two-step
-    fit2<-lm(log(c1)~log(d1))
-    beta0_fit2.boot=fit2$coefficients[1]
-    beta1_fit2.boot=fit2$coefficients[2]
-    sigma_fit2.boot=sqrt(sum(fit2$residuals^2)/fit2$df.residual)
+    fit2 <- lm(log(c1)~log(d1))
+    beta0_fit2.boot <- fit2$coefficients[1]
+    beta1_fit2.boot <- fit2$coefficients[2]
+    sigma_fit2.boot <- sqrt(sum(fit2$residuals^2)/fit2$df.residual)
     
-    obj1<-rep(NA,5)
-    obj2<-rep(NA,5)
-    obj3<-rep(NA,5)
+    obj1 <- rep(NA,5)
+    obj2 <- rep(NA,5)
+    obj3 <- rep(NA,5)
     for(tt in 1:5){
-      obj1[tt]<-out1[[tt]]$obj
-      obj2[tt]<-out2[[tt]]$obj
-      obj3[tt]<-out3[[tt]]$obj
+      obj1[tt] <- out1[[tt]]$obj
+      obj2[tt] <- out2[[tt]]$obj
+      obj3[tt] <- out3[[tt]]$obj
     }
-    par.boot[i,ind.boot,,1]<-temp1$par ###total
-    par.boot[i,ind.boot,,2]<-c(temp2$par,NA,NA,NA) ###simple
-    par.boot[i,ind.boot,,3]<-c(temp3$par,beta0_fit2.boot,beta1_fit2.boot,sigma_fit2.boot) ###twostep
+    par.boot[i,ind.boot,,1] <- temp1$par ###total
+    par.boot[i,ind.boot,,2] <- c(temp2$par,NA,NA,NA) ###simple
+    par.boot[i,ind.boot,,3] <- c(temp3$par,beta0_fit2.boot,beta1_fit2.boot,sigma_fit2.boot) ###twostep
     print(paste("i=",i,",boot number=", ind.boot))
   }
   
   
   
-}
+# }
 
 
 save(par,par.boot,file=paste0('/usrfiles/Dose_Exposure/s',situ,'_f',qqq,'.RData'))

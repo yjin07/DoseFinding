@@ -1,70 +1,14 @@
-source("ermodels.R")
-
-# 通用拟合函数
-fitERMod <- function(exposure, resp, model = NULL, type = c("gaussian", "binomial")) {
-    data <- data.frame(exposure = exposure, resp = resp)
-
-    start <- switch(model,
-        sigEmax = c(1, 1, 1, 1),
-        Emax = c(1, 1, 1),
-        Expo = c(1, 1, 1),
-        Beta = c(1, 1, 1, 1, 1),
-        Linear = c(1, 1),
-        LinearLog = c(1, 1, 1),
-        Logistic = c(1, 1, 1, 1),
-        Quadratic = c(1, 1, 1))
-
-    lower <- switch(model,
-        sigEmax = c(-Inf, -Inf, 0, 0),
-        Emax = c(-Inf, -Inf, 0),
-        Expo = c(-Inf, -Inf, 0),
-        Beta = c(-Inf, -Inf, 0, -Inf, -Inf),
-        Linear = c(-Inf, 0),
-        LinearLog = c(-Inf, 0, 0),
-        Logistic = c(-Inf, -Inf, 0, 0),
-        Quadratic = c(-Inf, 0, 0))
-
-    loglik <- switch(model,
-        sigEmax = loglik_sigEmax,
-        Emax = loglik_Emax,
-        Expo = loglik_Expo,
-        Beta = loglik_Beta,
-        Linear = loglik_Linear,
-        LinearLog = loglik_LinearLog,
-        Logistic = loglik_Logistic,
-        Quadratic = loglik_Quadratic)
-
-    ols <- switch(model,
-        sigEmax = ols_sigEmax,
-        Emax = ols_Emax,
-        Expo = ols_Expo,
-        Beta = ols_Beta,
-        Linear = ols_Linear,
-        LinearLog = ols_LinearLog,
-        Logistic = ols_Logistic,
-        Quadratic = ols_Quadratic)
-
-    if (type == "binomial") {
-        fit <- nlminb(start = start, objective = loglik, data = data, lower = lower)$par
-    } else if (type == "gaussian") {
-        fit <- nlminb(start = start, objective = ols, data = data, lower = lower)$par
-    } else {
-    stop("Invalid type specified. Choose 'gaussian' or 'binomial'.")
-    }
-
-    return(fit)
-}
-
+source("utils/fitERMod.R")
 
 # ----------------------------------
 # Example (Exposure-Response Model)
 # ----------------------------------
 library(dplyr)     # for data manipulation
 
-e0 <- logit(0.1)
-emax <- 3
-ec50 <- 0.4
-h <- 3
+# e0 <- logit(0.1)
+# emax <- 3
+# ec50 <- 0.4
+# h <- 3
 
 # # ----------------------------------
 # # ? Data generating model 1
@@ -115,20 +59,20 @@ h <- 3
 # # ----------------------------------
 # # ? Data generating model 3
 # # ----------------------------------
-set.seed(9981)
-cc <- c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1)
-n <- c(3,3,6,8,12,18,10,6,3,3)
-selected <- 1:7
+# set.seed(9981)
+# cc <- c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1)
+# n <- c(3,3,6,8,12,18,10,6,3,3)
+# selected <- 1:7
 
-ds <- cc[selected]
-nn <- n[selected]
+# ds <- cc[selected]
+# nn <- n[selected]
 
-ds <- rep(ds, nn) + rnorm(sum(nn), 0, 0.01)
-pr <- inv_logit(sigEmax(ds, e0, emax, ec50, h))
+# ds <- rep(ds, nn) + rnorm(sum(nn), 0, 0.01)
+# pr <- inv_logit(sigEmax(ds, e0, emax, ec50, h))
 
-exposure_data_bin <- data.frame(AUC24 = ds, pr = pr) %>% 
-    mutate(resp = rbinom(sum(nn), 1, pr)) %>% arrange(AUC24)
-head(exposure_data_bin)
+# exposure_data_bin <- data.frame(AUC24 = ds, pr = pr) %>% 
+#     mutate(resp = rbinom(sum(nn), 1, pr)) %>% arrange(AUC24)
+# head(exposure_data_bin)
 # # .....................................
 # # Check the shape of the true ER curve
 # # .....................................
@@ -140,8 +84,14 @@ head(exposure_data_bin)
 # # ----------------------------------
 # # ? Fitting the model
 # # ----------------------------------
-fit.sigEmax.par <- fitERMod(exposure_data_bin$AUC24, exposure_data_bin$resp, model = "sigEmax", type = "binomial")
-fit.sigEmax.par
+
+# models <- c("sigEmax", "Emax", "Expo", "Beta", "Linear", "LinearLog", "Logistic", "Quadratic")
+# for (iii in 1:length(models)) {
+#     cat("Model: ", models[iii], "\n")
+#     model <- models[iii]
+#     fit <- fitERMod(exposure_data_bin$AUC24, exposure_data_bin$resp, model = model, type = "binomial")
+#     print(fit)
+# }
 
 # # fit.sigEmax.e0 <- fit.sigEmax.par[1]
 # # fit.sigEmax.emax <- fit.sigEmax.par[2]
@@ -174,3 +124,47 @@ fit.sigEmax.par
 # #   mutate(resp = exp(sigEmax(AUC24, e0, eMax, ec50, h)))
 
 # # print(exposure_data_cont)
+
+
+
+# * ==================================
+# * Continuous response case
+# * ==================================
+source("utils/fitERMod.R")
+set.seed(1000)
+e0 <- 20
+eMax <- 100
+h <- 4
+EC50 <- 5
+sigma_c <- 0.5
+sigma_y <- 0.2
+TVCL <- 5                                       # ? Typical Value of Clearance
+beta0 <- -log(TVCL)
+beta1 <- 0.85
+
+doses <- c(20, 30, 48, 60, 80, 100, 110)        # ? Do not consider the placebo
+reps <- c(3, 3, 6, 8, 12, 18, 10)
+cat("Total number of observations: ", sum(reps), "\n")
+ds <- rep(doses, reps)
+
+logC <- beta0 + beta1 * log(ds) + rnorm(sum(reps), 0, sigma_c)
+CC <- exp(logC)
+logY <- log(e0 + eMax / (1 + (EC50 / CC)^h)) + rnorm(sum(reps), 0, sigma_y)
+Y <- exp(logY)
+
+df <- data.frame(Dose = ds, Exposure = CC, Response = Y)
+
+model <- "sigEmax"
+
+
+models <- c("sigEmax", "Emax", "Expo", "Beta", "Linear", "LinearLog", "Logistic", "Quadratic")
+for (iii in 1:length(models)) {
+    cat("Model: ", models[iii], "\n")
+    model <- models[iii]
+    fit <- fitERMod(df$Exposure, df$Response, model = model, type = "gaussian")
+    print(all.equal(fit$residuals, Y - predict(fit, newdata = df$Exposure)))
+}
+# fit <- fitERMod(df$Exposure, df$Response, model = model, type = "gaussian")
+# pred <- predict(fit, newdata = df$Exposure)
+# print(pred)
+# Y - pred

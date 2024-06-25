@@ -160,7 +160,7 @@ ols_sigEmax <- function(para, data) {
   h <- para[4]
 
   hat_logy <- sapply(1:nrow(data), function(i) sigEmax(data[i, 1], e0, emax, ec50, h))
-  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
 
@@ -170,7 +170,7 @@ ols_Emax <- function(para, data) {
   ec50 <- para[3]
 
   hat_logy <- sapply(1:nrow(data), function(i) Emax(data[i, 1], e0, emax, ec50))
-  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
 
@@ -180,7 +180,7 @@ ols_Expo <- function(para, data) {
   delta <- para[3]
 
   hat_logy <- sapply(1:nrow(data), function(i) Expo(data[i, 1], e0, e1, delta))
-  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
 
@@ -192,7 +192,7 @@ ols_Beta <- function(para, data) {
   scale <- para[5]
 
   hat_logy <- sapply(1:nrow(data), function(i) Beta(data[i, 1], e0, emax, delta1, delta2, scale))
-  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
 
@@ -201,7 +201,7 @@ ols_Linear <- function(para, data) {
   delta <- para[2]
 
   hat_logy <- sapply(1:nrow(data), function(i) Linear(data[i, 1], e0, delta))
-  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
 
@@ -211,7 +211,7 @@ ols_LinearLog <- function(para, data) {
   # offset <- para[3]
 
   hat_logy <- sapply(1:nrow(data), function(i) LinearLog(data[i, 1], e0, delta))
-  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
 
@@ -222,7 +222,7 @@ ols_Logistic <- function(para, data) {
   delta <- para[4]
 
   hat_logy <- sapply(1:nrow(data), function(i) Logistic(data[i, 1], e0, emax, ec50, delta))
-  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
 
@@ -232,7 +232,30 @@ ols_Quadratic <- function(para, data) {
   beta2 <- para[3]
 
   hat_logy <- sapply(1:nrow(data), function(i) Quadratic(data[i, 1], e0, beta1, beta2))
-  sse <- sum((log(data[, 2]) - hat_logy)^2)
+  sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
 
+
+model_info = list(
+    sigEmax = list(start = c(1, 1, 1, 1), lower = c(-Inf, -Inf, 0, 0), loglik = loglik_sigEmax, ols = ols_sigEmax, param_names = c("E0", "Emax", "EC50", "h")),
+    Emax = list(start = c(1, 1, 1), lower = c(-Inf, -Inf, 0), loglik = loglik_Emax, ols = ols_Emax, param_names = c("E0", "Emax", "EC50")),
+    Expo = list(start = c(1, 1, 1), lower = c(-Inf, -Inf, 0), loglik = loglik_Expo, ols = ols_Expo, param_names = c("E0", "E1", "Delta")),
+    Beta = list(start = c(1, 1, 1, 1, 1), lower = c(-Inf, -Inf, -Inf, -Inf, 0), loglik = loglik_Beta, ols = ols_Beta, param_names = c("E0", "Emax", "Delta1", "Delta2", "Scale")),
+    Linear = list(start = c(1, 1), lower = c(-Inf, 0), loglik = loglik_Linear, ols = ols_Linear, param_names = c("E0", "Delta")),
+    LinearLog = list(start = c(1, 1), lower = c(-Inf, 0), loglik = loglik_LinearLog, ols = ols_LinearLog, param_names = c("E0", "Delta")),
+    Logistic = list(start = c(1, 1, 1, 1), lower = c(-Inf, -Inf, 0, 0), loglik = loglik_Logistic, ols = ols_Logistic, param_names = c("E0", "Emax", "EC50", "Delta")),
+    Quadratic = list(start = c(1, 1, 1), lower = c(-Inf, 0, 0), loglik = loglik_Quadratic, ols = ols_Quadratic, param_names = c("E0", "B1", "B2"))
+)
+
+
+model_functions <- list(
+    sigEmax = list(func = sigEmax, params = c("cc", "e0", "eMax", "ec50", "h")),
+    Emax = list(func = Emax, params = c("cc", "e0", "eMax", "ec50")),
+    Expo = list(func = Expo, params = c("cc", "e0", "e1", "delta")),
+    Beta = list(func = Beta, params = c("cc", "e0", "eMax", "delta1", "delta2", "scale")),
+    Linear = list(func = Linear, params = c("cc", "e0", "delta")),
+    LinearLog = list(func = LinearLog, params = c("cc", "e0", "delta", "offset")),
+    Logistic = list(func = Logistic, params = c("cc", "e0", "eMax", "ec50", "delta")),
+    Quadratic = list(func = Quadratic, params = c("cc", "e0", "b1", "b2"))
+)
