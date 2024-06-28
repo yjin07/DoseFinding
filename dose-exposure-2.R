@@ -1,4 +1,4 @@
-rm(list=ls()) # TODO:
+# rm(list=ls())
 
 source("ermodels.R")
 library(dplyr)
@@ -14,10 +14,10 @@ library(dplyr)
 
 # Model: logit(P(Y=1)) = E_0 + (E_max * d^h) / (ED50^h + d^h)
 
-# sigEmax <- function(d, e0, emax, ed50, h){
-#   theta <- e0 + emax*(d^h/(ed50^h + d^h))
-#   return(theta)
-# }
+sigEmax <- function(d, e0, emax, ed50, h){
+  theta <- e0 + emax*(d^h/(ed50^h + d^h))
+  return(theta)
+}
 
 # specify model parameter
 e0 <- logit(0.1)
@@ -74,28 +74,28 @@ obs.sigEmax.orr <- rspd_obs
 # head(df)
 # * ----------------------------------------
 
-# log-likelihood function for Sigmoid Emax Model
-# loglik_sigEmax <- function(para, data){
-#   e0 <- para[1]
-#   emax <- para[2]
-#   ed50 <- para[3]
-#   h <- para[4]
+log-likelihood function for Sigmoid Emax Model
+loglik_sigEmax <- function(para, data){
+  e0 <- para[1]
+  emax <- para[2]
+  ed50 <- para[3]
+  h <- para[4]
   
-#   log_p_y1 <- NULL
-#   log_p_y0 <- NULL
+  log_p_y1 <- NULL
+  log_p_y0 <- NULL
   
-#   for(i in 1:dim(data)[1]){
-#     logit_y1 <- sigEmax(data[i,1], e0, emax, ed50, h)
-#     p_y1 <- inv_logit(logit_y1)
-#     p_y0 <- 1-p_y1
-#     log_p_y1 <- c(log_p_y1, log(p_y1))
-#     log_p_y0 <- c(log_p_y0, log(p_y0))
-#   }
+  for(i in 1:dim(data)[1]){
+    logit_y1 <- sigEmax(data[i,1], e0, emax, ed50, h)
+    p_y1 <- inv_logit(logit_y1)
+    p_y0 <- 1-p_y1
+    log_p_y1 <- c(log_p_y1, log(p_y1))
+    log_p_y0 <- c(log_p_y0, log(p_y0))
+  }
   
-#   loglik <- as.numeric(data[,2]%*%log_p_y1)+as.numeric((1-data[,2])%*%log_p_y0)
+  loglik <- as.numeric(data[,2]%*%log_p_y1)+as.numeric((1-data[,2])%*%log_p_y0)
   
-#   return(-loglik)
-# }
+  return(-loglik)
+}
 
 # maximize log-likelihood function i.e. minimize -log-likelihood function
 fit.sigEmax.par <- nlminb(start=c(1, 1, 1, 1), objective=loglik_sigEmax, data=df, lower=c(-Inf, -Inf, 0, 0))$par
@@ -366,6 +366,7 @@ loglik_Beta <- function(para, data){
   return(-loglik)
 }
 
+# TODO: why this lower bound?
 # maximize log-likelihood function i.e. minimize -log-likelihood function
 fit.Beta.par <- nlminb(start=c(1, 1, 1, 1, 1), objective=loglik_Beta, data=df, lower=c(-Inf, -Inf, 0, -Inf, -Inf))$par
 fit.Beta.e0 <- fit.Beta.par[1]
@@ -454,6 +455,7 @@ loglik_Linear <- function(para, data){
   return(-loglik)
 }
 
+# TODO: why this lower bound?
 # maximize log-likelihood function i.e. minimize -log-likelihood function
 fit.Linear.par <- nlminb(start=c(1, 1), objective=loglik_Linear, data=df, lower=c(-Inf, 0))$par
 fit.Linear.e0 <- fit.Linear.par[1]
@@ -472,7 +474,7 @@ fit.Linear.orr <- inv_logit(Linear(dose_seq, fit.Linear.e0, fit.Linear.delta))
 
 # Model: logit(P(Y=1)) = E_0 + delta*log(d+offset)
 
-LinearLog <- function(d, e0, delta, offset){
+LinearLog <- function(d, e0, delta, offset){  # FIXME:
   theta <- e0 + delta*d
   return(theta)
 }
@@ -540,6 +542,7 @@ loglik_LinearLog <- function(para, data){
   return(-loglik)
 }
 
+# TODO: why this lower bound?
 # maximize log-likelihood function i.e. minimize -log-likelihood function
 fit.LinearLog.par <- nlminb(start=c(1, 1, 1), objective=loglik_LinearLog, data=df, lower=c(-Inf, 0, 0))$par
 fit.LinearLog.e0 <- fit.LinearLog.par[1]
@@ -559,7 +562,7 @@ fit.LinearLog.orr <- inv_logit(LinearLog(dose_seq, fit.LinearLog.e0, fit.LinearL
 
 # Model: logit(P(Y=1)) = E_0 + E_max / (1 + exp(ED50-d)/delta)
 
-Logistic <- function(d, e0, emax, ed50, delta){
+Logistic <- function(d, e0, emax, ed50, delta){ # FIXME:
   theta <- e0 + emax/(1+exp(ed50-d)/delta)
   return(theta)
 }
@@ -717,6 +720,8 @@ loglik_Quadratic <- function(para, data){
   return(-loglik)
 }
 
+
+# TODO: why this lower bound?
 # maximize log-likelihood function i.e. minimize -log-likelihood function
 fit.Quadratic.par <- nlminb(start=c(1, 1, 1), objective=loglik_Quadratic , data=df, lower=c(-Inf, 0, 0))$par
 fit.Quadratic.e0 <- fit.Quadratic.par[1]

@@ -35,9 +35,24 @@ where $f_m$ denotes the exposure-response function, $c$ is the exposure, and $\t
 
 
 For the continous-response case, the response is assume to follow a lognormal distribution conditional on the exposure as follows:
-$$log(Y) \sim N(\log(\mu_c), \sigma^2)$$
+$$log(Y) \sim N(\log(\mu_c), ~\sigma^2)$$
 
-For the binary-response case, 
+For the binary-response case, we assume that
+$$\text{logit}(P(Y=1)) = \mu_c$$
 
 
-## 2. Dose-Exposure **model**
+## 2. Dose-Exposure model
+To model the Dose-Exposure relationship, we consider the following power model:
+$$\log(C) = \alpha + \beta\log(d) + \varepsilon_C$$
+
+> The rationale for this model is that the for the steady-state area under the concentration curve ($AUC_{ss}$), we have
+> $$
+> \begin{aligned}
+>     & AUC_{ss} = \frac{d}{CL}\\
+>     \Longrightarrow \quad& log(AUC_{ss}) = \log(d) - \log(CL)\\ 
+>     \Longrightarrow \quad& \log(AUC_{ss}) \sim N(log(d) - \log(CL), ~\sigma^2)
+> \end{aligned}
+> $$
+> where $CL$ is the clearance, and is assumed to have a lognoremal distribution
+> $$\log(CL)\sim N(\log(TVCL), ~\sigma^2)$$
+> where $TVCL$ denotes the typical value of clearance.

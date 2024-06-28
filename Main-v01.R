@@ -128,10 +128,10 @@ library(dplyr)     # for data manipulation
 
 
 # * ==================================
-# * Continuous response case
+# * Continuous response case (ER)
 # * ==================================
 source("utils/fitERMod.R")
-set.seed(1000)
+# set.seed(1000)
 e0 <- 20
 eMax <- 100
 h <- 4
@@ -149,12 +149,16 @@ ds <- rep(doses, reps)
 
 logC <- beta0 + beta1 * log(ds) + rnorm(sum(reps), 0, sigma_c)
 CC <- exp(logC)
-logY <- log(e0 + eMax / (1 + (EC50 / CC)^h)) + rnorm(sum(reps), 0, sigma_y)
+logY <- log(e0 + eMax / (1 + (EC50 / CC)^h)) + rnorm(sum(reps), 0, sigma_y)   # ? True model: sigEmax
 Y <- exp(logY)
 
 df <- data.frame(Dose = ds, Exposure = CC, Response = Y)
 
-model <- "sigEmax"
+# model <- "sigEmax"
+# fit <- fitERMod(df$Exposure, df$Response, model = model, type = "gaussian")
+# pred <- predict(fit, newdata = df$Exposure)
+# print(pred)
+# Y - pred
 
 
 models <- c("sigEmax", "Emax", "Expo", "Beta", "Linear", "LinearLog", "Logistic", "Quadratic")
@@ -164,7 +168,129 @@ for (iii in 1:length(models)) {
     fit <- fitERMod(df$Exposure, df$Response, model = model, type = "gaussian")
     print(all.equal(fit$residuals, Y - predict(fit, newdata = df$Exposure)))
 }
-# fit <- fitERMod(df$Exposure, df$Response, model = model, type = "gaussian")
-# pred <- predict(fit, newdata = df$Exposure)
-# print(pred)
-# Y - pred
+
+
+# * ==================================
+# * Binary response case (ER)
+# * ==================================
+source("utils/fitERMod.R")
+e0 <- logit(0.1)
+eMax <- 3
+h <- 4
+EC50 <- 5
+sigma_c <- 0.5
+sigma_y <- 0.2
+TVCL <- 5                                       # ? Typical Value of Clearance
+beta0 <- -log(TVCL)
+beta1 <- 0.85
+
+doses <- c(20, 30, 48, 60, 80, 100, 110)        # ? Do not consider the placebo
+reps <- c(3, 3, 6, 8, 12, 18, 10)
+cat("Total number of observations: ", sum(reps), "\n")
+ds <- rep(doses, reps)
+
+logC <- beta0 + beta1 * log(ds) + rnorm(sum(reps), 0, sigma_c)
+CC <- exp(logC)
+logitP <- e0 + eMax / (1 + (EC50 / CC)^h)       # ? True model: sigEmax
+Ps <- inv_logit(logitP)
+Y <- rbinom(sum(reps), 1, Ps)
+
+df <- data.frame(Dose = ds, Exposure = CC, Response = Y)
+
+model <- "sigEmax"
+fit <- fitERMod(df$Exposure, df$Response, model = model, type = "binomial")
+pred <- predict(fit, newdata = df$Exposure, type = 'class')
+print(pred)
+pred <- predict(fit, newdata = df$Exposure)
+print(pred)
+
+
+fit2 <- lm(log(CC) ~ log(ds))
+
+newdoses <- data.frame(ds = c(20))
+pred2 <- predict(fit2, newdata = newdoses)
+
+
+
+# * ==================================
+# * Continuous response case (DER)
+# * ==================================
+source("utils/fitDERMod.R")
+# set.seed(1000)
+e0 <- 20
+eMax <- 100
+h <- 4
+EC50 <- 5
+sigma_c <- 0.5
+sigma_y <- 0.2
+TVCL <- 5                                       # ? Typical Value of Clearance
+beta0 <- -log(TVCL)
+beta1 <- 0.85
+
+doses <- c(20, 30, 48, 60, 80, 100, 110)        # ? Do not consider the placebo
+reps <- c(3, 3, 6, 8, 12, 18, 10)
+cat("Total number of observations: ", sum(reps), "\n")
+ds <- rep(doses, reps)
+
+logC <- beta0 + beta1 * log(ds) + rnorm(sum(reps), 0, sigma_c)
+CC <- exp(logC)
+logY <- log(e0 + eMax / (1 + (EC50 / CC)^h)) + rnorm(sum(reps), 0, sigma_y)   # ? True model: sigEmax
+Y <- exp(logY)
+
+df <- data.frame(Dose = ds, Exposure = CC, Response = Y)
+
+model <- "sigEmax"
+fit <- fitDERMod(df$Dose, df$Exposure, df$Response, model = model, type = "gaussian")
+pred <- predict(fit, newdata = unique(df$Dose))
+print(pred)
+Y - pred
+
+
+# models <- c("sigEmax", "Emax", "Expo", "Beta", "Linear", "LinearLog", "Logistic", "Quadratic")
+# for (iii in 1:length(models)) {
+#     cat("Model: ", models[iii], "\n")
+#     model <- models[iii]
+#     fit <- fitERMod(df$Exposure, df$Response, model = model, type = "gaussian")
+#     print(all.equal(fit$residuals, Y - predict(fit, newdata = df$Exposure)))
+# }
+
+
+# * ==================================
+# * Binary response case (DER)
+# * ==================================
+source("utils/fitERMod.R")
+e0 <- logit(0.1)
+eMax <- 3
+h <- 4
+EC50 <- 5
+sigma_c <- 0.5
+sigma_y <- 0.2
+TVCL <- 5                                       # ? Typical Value of Clearance
+beta0 <- -log(TVCL)
+beta1 <- 0.85
+
+doses <- c(20, 30, 48, 60, 80, 100, 110)        # ? Do not consider the placebo
+reps <- c(3, 3, 6, 8, 12, 18, 10)
+cat("Total number of observations: ", sum(reps), "\n")
+ds <- rep(doses, reps)
+
+logC <- beta0 + beta1 * log(ds) + rnorm(sum(reps), 0, sigma_c)
+CC <- exp(logC)
+logitP <- e0 + eMax / (1 + (EC50 / CC)^h)       # ? True model: sigEmax
+Ps <- inv_logit(logitP)
+Y <- rbinom(sum(reps), 1, Ps)
+
+df <- data.frame(Dose = ds, Exposure = CC, Response = Y)
+
+model <- "sigEmax"
+fit <- fitERMod(df$Exposure, df$Response, model = model, type = "binomial")
+pred <- predict(fit, newdata = df$Exposure, type = 'class')
+print(pred)
+pred <- predict(fit, newdata = df$Exposure)
+print(pred)
+
+
+fit2 <- lm(log(CC) ~ log(ds))
+
+newdoses <- data.frame(ds = c(20))
+pred2 <- predict(fit2, newdata = newdoses)

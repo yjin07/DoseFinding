@@ -43,7 +43,7 @@ log_DR_log_normal_LS_EMAX_simple<-function(par,data){
 }
 
 ###objective function of model 2 with linear relationship beta1==1
-log_DR_log_normal_LS_EMAX_total<-function(par,data){
+log_DR_log_normal_LS_EMAX_total<-function(par,data){ # TODO:
   
   E0=par[1]
   EMAX=par[2]
@@ -135,7 +135,7 @@ log_DR_log_normal_LS_EMAX_twostep<-function(par,data){
 
 
 ###objective function of model 2 with power model for dose and exposure relationship 
-log_DR_log_normal_LS_EMAX_total_power<-function(par,data){
+log_DR_log_normal_LS_EMAX_total_power<-function(par,data){ # TODO:
   
   E0=par[1]
   EMAX=par[2]
@@ -225,7 +225,7 @@ par.boot<-array(NA,c(num.sim,boot.num,7,3))
   
   c <- exp(logc)                                                        # ? Exposure
   top <- EMAX*(c^h); bottom <- EC50^h+c^h; epi=rnorm(N,0,sd=sigma_y)
-  y <- exp(log(top/bottom+E0)+epi)                                      # ? Response FIXME: do not make sense
+  y <- exp(log(top/bottom+E0)+epi)                                      # ? Response FIXME:
   data <- data.frame(y=y,c=c,d=d)                                       
   data1 <- data[c(1:20,41:60,81:100),]                                  # ! Not used
 
