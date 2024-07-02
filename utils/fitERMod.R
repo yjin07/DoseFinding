@@ -1,5 +1,7 @@
-source("utils/ermodels.R")
-source("utils/Mods.R")
+library(here)
+
+source(here("utils", "ermodels.R"))
+source(here("utils", "Mods.R"))
 
 # General function to fit an exposure-response model
 fitERMod <- function(exposure, resp, model = NULL, type = c("gaussian", "binomial"), addArgs = NULL) {

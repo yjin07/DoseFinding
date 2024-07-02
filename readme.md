@@ -6,8 +6,14 @@ Assuming that the median response $\mu$ as a function of exposure is represented
 $$\mu_c = f_m(c; \theta_m) $$
 where $f_m$ denotes the exposure-response function, $c$ is the exposure, and $\theta_m$ is the vector of parameters of the exposure-response function.
 
+For the <mark>continous-response</mark> case, the response is assume to follow a lognormal distribution conditional on the exposure as follows:
+$$log(Y) \sim N(\log(\mu_c), ~\sigma^2)$$
+
+For the <mark>binary-response</mark> case, we assume that
+$$\text{logit}(P(Y=1)) = \mu_c$$
+
 > <u>ER functions</u>:
-> +  **Emax model**: *monotone, concave expopsure-response shapes*
+> +  **Emax model**: *monotone, concave exposure-response shapes*
 >    $$f(c, \theta) = E_0 + E_{\max}\frac{c}{EC_{50} + c}$$
 >
 >+ **Sigmoid Emax Model**: *adds a Hill coefficient $h$ to the Emax model to control the steepness of the curve at the EC50.*
@@ -32,13 +38,6 @@ where $f_m$ denotes the exposure-response function, $c$ is the exposure, and $\t
 >
 >+ **Quadratic**: *captures a possible non-monotonic exposure-response relationship*
 >    $$f(c, \theta) = E_0 + \beta_1 c + \beta_2 c^2$$
-
-
-For the continous-response case, the response is assume to follow a lognormal distribution conditional on the exposure as follows:
-$$log(Y) \sim N(\log(\mu_c), ~\sigma^2)$$
-
-For the binary-response case, we assume that
-$$\text{logit}(P(Y=1)) = \mu_c$$
 
 
 ## 2. Dose-Exposure model
