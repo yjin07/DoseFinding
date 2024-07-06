@@ -56,7 +56,6 @@ loglik_sigEmax <- function(para, data) {
   
   log_p_y1 <- sapply(1:nrow(data), function(i) log(inv_logit(sigEmax(data[i, 1], e0, emax, ec50, h))))
   log_p_y0 <- sapply(1:nrow(data), function(i) log(1 - inv_logit(sigEmax(data[i, 1], e0, emax, ec50, h))))
-  
   loglik <- sum(data[, 2] * log_p_y1 + (1 - data[, 2]) * log_p_y0)
   return(-loglik)
 }
@@ -79,10 +78,13 @@ loglik_Expo <- function(para, data) {
   e1 <- para[2]
   delta <- para[3]
   
-  log_p_y1 <- sapply(1:nrow(data), function(i) log(inv_logit(Expo(data[i, 1], e0, e1, delta))))
-  log_p_y0 <- sapply(1:nrow(data), function(i) log(1 - inv_logit(Expo(data[i, 1], e0, e1, delta))))
-  
-  loglik <- sum(data[, 2] * log_p_y1 + (1 - data[, 2]) * log_p_y0)
+  # log_p_y1 <- sapply(1:nrow(data), function(i) log(inv_logit(Expo(data[i, 1], e0, e1, delta))))
+  # log_p_y0 <- sapply(1:nrow(data), function(i) log(1 - inv_logit(Expo(data[i, 1], e0, e1, delta))))  
+  # loglik <- sum(data[, 2] * log_p_y1 + (1 - data[, 2]) * log_p_y0)
+
+  p <- pmin(pmax(inv_logit(Expo(data[,1], e0, e1, delta)), 1e-10), 1-1e-10)
+  loglik <- sum(data[,2] * log(p) + (1 - data[,2]) * log(1 - p))
+
   return(-loglik)
 }
 
@@ -153,10 +155,13 @@ loglik_Quadratic <- function(para, data) {
   beta1 <- para[2]
   beta2 <- para[3]
   
-  log_p_y1 <- sapply(1:nrow(data), function(i) log(inv_logit(Quadratic(data[i, 1], e0, beta1, beta2))))
-  log_p_y0 <- sapply(1:nrow(data), function(i) log(1 - inv_logit(Quadratic(data[i, 1], e0, beta1, beta2))))
-  
-  loglik <- sum(data[, 2] * log_p_y1 + (1 - data[, 2]) * log_p_y0)
+  # log_p_y1 <- sapply(1:nrow(data), function(i) log(inv_logit(Quadratic(data[i, 1], e0, beta1, beta2))) + 1e-8)
+  # log_p_y0 <- sapply(1:nrow(data), function(i) log(1 - inv_logit(Quadratic(data[i, 1], e0, beta1, beta2))) + 1e-8)
+  # loglik <- sum(data[, 2] * log_p_y1 + (1 - data[, 2]) * log_p_y0)
+
+  p <- pmin(pmax(inv_logit(Quadratic(data[,1], e0, beta1, beta2)), 1e-10), 1-1e-10)
+  loglik <- sum(data[,2] * log(p) + (1 - data[,2]) * log(1 - p))
+
   return(-loglik)
 }
 
@@ -171,7 +176,7 @@ ols_sigEmax <- function(para, data) {
   ec50 <- para[3]
   h <- para[4]
 
-  hat_logy <- sapply(1:nrow(data), function(i) sigEmax(data[i, 1], e0, emax, ec50, h))
+  hat_logy <- pmax(sigEmax(data[, 1], e0, emax, ec50, h), 1e-10)
   sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
@@ -181,7 +186,7 @@ ols_Emax <- function(para, data) {
   emax <- para[2]
   ec50 <- para[3]
 
-  hat_logy <- sapply(1:nrow(data), function(i) Emax(data[i, 1], e0, emax, ec50))
+  hat_logy <- pmax(Emax(data[, 1], e0, emax, ec50), 1e-10)
   sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
@@ -191,7 +196,7 @@ ols_Expo <- function(para, data) {
   e1 <- para[2]
   delta <- para[3]
 
-  hat_logy <- sapply(1:nrow(data), function(i) Expo(data[i, 1], e0, e1, delta))
+  hat_logy <- pmax(Expo(data[, 1], e0, e1, delta), 1e-10)
   sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
@@ -202,7 +207,7 @@ ols_Beta <- function(para, data, scale) {
   delta1 <- para[3]
   delta2 <- para[4]
 
-  hat_logy <- sapply(1:nrow(data), function(i) Beta(data[i, 1], e0, emax, delta1, delta2, scale))
+  hat_logy <- pmax(Beta(data[, 1], e0, emax, delta1, delta2, scale), 1e-10)
   sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
@@ -211,7 +216,7 @@ ols_Linear <- function(para, data) {
   e0 <- para[1]
   delta <- para[2]
 
-  hat_logy <- sapply(1:nrow(data), function(i) Linear(data[i, 1], e0, delta))
+  hat_logy <- pmax(Linear(data[, 1], e0, delta), 1e-10)
   sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
@@ -220,7 +225,7 @@ ols_LinearLog <- function(para, data, off) {
   e0 <- para[1]
   delta <- para[2]
 
-  hat_logy <- sapply(1:nrow(data), function(i) LinearLog(data[i, 1], e0, delta, off))
+  hat_logy <- pmax(LinearLog(data[, 1], e0, delta, off), 1e-10)
   sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
@@ -231,7 +236,7 @@ ols_Logistic <- function(para, data) {
   ec50 <- para[3]
   delta <- para[4]
 
-  hat_logy <- sapply(1:nrow(data), function(i) Logistic(data[i, 1], e0, emax, ec50, delta))
+  hat_logy <- pmax(Logistic(data[, 1], e0, emax, ec50, delta), 1e-10)
   sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }
@@ -241,7 +246,7 @@ ols_Quadratic <- function(para, data) {
   beta1 <- para[2]
   beta2 <- para[3]
 
-  hat_logy <- sapply(1:nrow(data), function(i) Quadratic(data[i, 1], e0, beta1, beta2))
+  hat_logy <- pmax(Quadratic(data[, 1], e0, beta1, beta2), 1e-10)
   sse <- sum((log(data[, 2]) - log(hat_logy))^2)
   return(sse)
 }

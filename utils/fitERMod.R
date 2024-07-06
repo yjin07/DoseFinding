@@ -61,9 +61,30 @@ fitERMod <- function(exposure, resp, model = NULL, type = c("gaussian", "binomia
 
     fit_list <- list(model = model, coeffs = as.list(fit), scale = scale, off = off, type = type)
 
+    n <- length(resp)
     fitted_values <- predict.ERMod(fit_list, exposure)
-    rediduals <- resp - fitted_values
-    fit_list$residuals <- rediduals
+
+    fit_list$fitted_values <- fitted_values
+    fit_list$df.residual <- n - length(fit_list$coeffs)
+
+    if (type == 'binomial') {
+        residuals <- resp - fitted_values
+        devResiduals <- sign(residuals) * sqrt(-2 * (resp * log(fitted_values) + (1 - resp) * log(1 - fitted_values)))
+
+        fit_list$devResiduals <- devResiduals
+        fit_list$deviance <- sum(devResiduals^2)
+        fit_list$logLike <- sum(resp * log(fitted_values) + (1 - resp) * log(1 - fitted_values))
+    } else if (type == 'gaussian') {
+        residuals <- log(resp) - log(fitted_values)
+        residuals_sq <- sum(residuals^2)
+        sigma_sq <- residuals_sq / fit_list$df.residual
+
+        fit_list$residuals <- residuals
+        fit_list$logLike <- -0.5 * (n * log(2 * pi) + n * log(sigma_sq) + residuals_sq / sigma_sq)
+    }
+
+    fit_list$AIC <- -2 * fit_list$logLike + 2 * length(fit_list$coeffs)
+
     
     class(fit_list) <- "ERMod"
     return(fit_list)
