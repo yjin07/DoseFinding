@@ -1,7 +1,7 @@
 SIDEWIDTH = 270
 
 header <- dashboardHeader(
-      title = "D-E-R analysis", titleWidth = SIDEWIDTH, disable = FALSE,
+      title = "DER analysis", titleWidth = SIDEWIDTH, disable = FALSE,
       dropdownMenu(type = "messages",
         messageItem(
           from = "Sales Dept",
@@ -93,9 +93,9 @@ siderbar <- dashboardSidebar(
       div(
         id = "sidebar_selection_container",
         selectInput("model", label = NULL, # choices = c()
-          choices = list("Sigmoid-Emax" = "sEmax", "Emax" = "emax", "Exponential" = "expo", 
-                          "Beta" = "beta", "Linear" = "linear", "Linear-Log"="linearLog",
-                          "Logistic" = "logistic", "Quadratic" = "quad"), 
+          choices = list("Sigmoid-Emax" = "sigEmax", "Emax" = "Emax", "Exponential" = "Expo", 
+                          "Beta" = "Beta", "Linear" = "Linear", "Linear-Log"="LinearLog",
+                          "Logistic" = "Logistic", "Quadratic" = "Quadratic"), 
           selected = "Sigmoid-Emax"
           )
       ),
@@ -167,28 +167,85 @@ body <- dashboardBody(
                   ),
                   tabPanel(
                     "Visualization", "Add Model content here.",
-                      box(
-                        title = "Exposure-Response Quantile Plot", # status = "warning", 
-                        solidHeader = TRUE, width = 10, # height = 500,
-                        "Add Box content here.", br(), "More content here.",
-                        # column(6, div(id = "plot1_container", withSpinner(plotOutput("plot1"))))
-                        withSpinner(plotOutput("plot1_real"))
+                      fluidRow(
+                        box(
+                          title = "Exposure-Response Quantile Plot", status = "warning", 
+                          solidHeader = TRUE, width = 8, # height = 500,
+                          "Add Box content here.", br(), "More content here.",
+                          withSpinner(plotOutput("plot1_real"))
+                        ),
+                        box(
+                          title = "Exposure-Response Logistic Regression Plot", status = "warning", 
+                          solidHeader = TRUE, width = 8,
+                          withSpinner(plotOutput("plot2_real")),
+                          "Add Box content here.", br(), "More content here."
+                        ),
                       ),
+                      # box(
+                      #   title = "Exposure-Response Quantile Plot", # status = "warning", 
+                      #   solidHeader = TRUE, width = 10, # height = 500,
+                      #   "Add Box content here.", br(), "More content here.",
+                      #   # column(6, div(id = "plot1_container", withSpinner(plotOutput("plot1"))))
+                      #   withSpinner(plotOutput("plot1_real"))
+                      # ),
                     ),
                   tabPanel(
-                    "Results", "Add Results content here.",
+                    "Results",
+                    box(
+                      title = "ER Model: Fitted Curve with Data Points", status = "warning",
+                      solidHeader = TRUE, width = 7,
+                      withSpinner(plotOutput("ER_plot")),
+                    ),
+                    box(
+                      title = "DE Model: Summary", status = "warning", 
+                      solidHeader = TRUE, width = 5,
+                      verbatimTextOutput("de_summary")
+                    ),
+                    conditionalPanel(
+                      condition = "input.responseType == 'Continuous'",
                       box(
-                        title = "Exposure-Response Logistic Regression Plot", # status = "warning", 
-                        solidHeader = TRUE, width = 10,
-                        # div(id = "plot2_container", withSpinner(plotOutput("plot2")))
-                        withSpinner(plotOutput("plot2_real")),
+                        title = "ER Model: Q-Q Plot of Residuals", status = "warning", 
+                        solidHeader = TRUE, width = 7,
+                        withSpinner(plotOutput("ER_qqplot")),
                         "Add Box content here.", br(), "More content here."
+                        ),
+                      box(
+                        title = "ER Model: Residuals  & AIC", status = "warning", 
+                        solidHeader = TRUE, width = 5,
+                        verbatimTextOutput("ER_residuals"),
+                        verbatimTextOutput("ER_AIC"),
+                        ),
+                      box(
+                        title = "ER Model: Residuals vs Fitted Values Plot", status = "warning", 
+                        solidHeader = TRUE, width = 8,
+                        withSpinner(plotOutput("ER_ResFitplot")),
+                        "Add Box content here.", br(), "More content here."
+                        ),
+                      ),
+                    conditionalPanel(
+                      condition = "input.responseType == 'Binary'",
+                      box(
+                        title = "ER Model: ROC Curve", status = "warning", 
+                        solidHeader = TRUE, width = 7,
+                        withSpinner(plotOutput("ER_ROCplot")),
+                        textOutput("AUC_text"),
+                        "Add Box content here.", br(), "More content here."
+                        ),
+                      box(
+                        title = "ER Model: Deviance Residuals", status = "warning", solidHeader = TRUE, width = 5,
+                        "Deviance residuals:",
+                        verbatimTextOutput("ER_devResiduals"),
+                        "Residual deviance:",
+                        verbatimTextOutput("ER_deviance")
+                      ),
+                      box(
+                        title = "ER Model: Hosmer-Lemeshow Test", status = "warning",
+                        solidHeader = TRUE, width = 8,
+                        verbatimTextOutput("HL_test"),
                       ),
                     )
+                  ),
                 ),
-              # column(6, div(id = "exposure_table_container", withSpinner(DTOutput("exposure_table_real")))),
-              # column(6, div(id = "plot1_container", withSpinner(plotOutput("plot1_real")))),
-              # column(10, div(id = "plot2_container", withSpinner(plotOutput("plot2_real"))))
             )
       )
     )
