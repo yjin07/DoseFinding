@@ -54,7 +54,7 @@ server <- function(input, output, session) {
     #   data.frame(Dose = new_doses, Fitted = inv_logit(fitted_values2))
     # )
 
-    log_info("Fitted values are calculated here 1...")
+    # log_info("Fitted values are calculated here 1...")
 
     if (input$responseType == "Continuous") {
       fit_df2 <- data.frame(Dose = new_doses, Fitted = fitted_values2)
@@ -62,7 +62,7 @@ server <- function(input, output, session) {
       fit_df2 <- data.frame(Dose = new_doses, Fitted = inv_logit(fitted_values2))
     }
 
-    log_info("Fitted values are calculated here 2...")
+    # log_info("Fitted values are calculated here 2...")
 
     fit_er <- fit_der$fit1
     fit_de <- fit_der$fit2
@@ -72,12 +72,12 @@ server <- function(input, output, session) {
     fit_df <- data.frame(Exposure = new_exposure, Fitted = fitted_values)
 
 
-    log_info("Fitted values are calculated here 2.5...")
+    # log_info("Fitted values are calculated here 2.5...")
     fitted_values1 <- predict(fit_de, newdata = data.frame(dose = new_doses))
-    log_info("Fitted values are calculated here 2.6...")
+    # log_info("Fitted values are calculated here 2.6...")
     fit_df1 <- data.frame(Dose = new_doses, Fitted = fitted_values1)
 
-    log_info("Fitted values are calculated here 3...")
+    # log_info("Fitted values are calculated here 3...")
 
     output$de_summary <- renderPrint({
       summary(fit_de)
@@ -226,8 +226,21 @@ server <- function(input, output, session) {
     fit_df2$CI_high <- ci_high
 
     if (input$responseType == "Continuous") {
+      df_summary <- df %>%
+        group_by(Dose) %>%
+        summarise(
+          n = n(),
+          mean_log_response = mean(log(Response)),
+          sd_log_response = sd(log(Response)),
+          se_log_response = sd_log_response / sqrt(n),
+          ci_low = mean_log_response - qt(0.975, df = n - 1) * se_log_response,
+          ci_high = mean_log_response + qt(0.975, df = n - 1) * se_log_response
+        )
+
       p_der0 <- ggplot() +
+        geom_errorbar(data = df_summary, aes(x = Dose, ymin = ci_low, ymax = ci_high), width = 0.2) +  # Error bars
         geom_point(data = df, aes(x = Dose, y = log(Response)), color = "blue", alpha = 0.5) +  # 数据点
+        geom_point(data = df_summary, aes(x = Dose, y = mean_log_response), color = "black", size = 2) +  # 数据点
         geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线
         geom_ribbon(data = fit_df2, aes(x = Dose, ymin = CI_low, ymax = CI_high), alpha = 0.2, fill = "grey") +  # 置信区间
         labs(
@@ -236,8 +249,20 @@ server <- function(input, output, session) {
         ) +
         theme_minimal()
     } else {
+      df_summary <- df %>%
+        group_by(Dose) %>%
+        summarise(
+          n = n(),
+          resp = sum(Response),
+          prob = mean(Response),
+          ci_low = binom.confint(resp, n, methods = "wilson")$lower,
+          ci_high = binom.confint(resp, n, methods = "wilson")$upper
+        )
+
       p_der0 <- ggplot() +
         geom_jitter(data = df, aes(x = Dose, y = Response), color = "blue", alpha = 0.5, width = 0, height = 0.05) + 
+        geom_point(data = df_summary, aes(x = Dose, y = prob), color = "black", size = 2) +  # 数据点
+        geom_errorbar(data = df_summary, aes(x = Dose, ymin = ci_low, ymax = ci_high), width = 0.2) +  # Error bars
         geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线
         geom_ribbon(data = fit_df2, aes(x = Dose, ymin = CI_low, ymax = CI_high), alpha = 0.2, fill = "grey") + 
         labs(

@@ -163,7 +163,6 @@ body <- dashboardBody(
                     box(
                       title = "Source Data", # status = "primary", 
                       solidHeader = TRUE, width = 6, # height = 600,
-                      # div(id = "exposure_table_container", withSpinner(DTOutput("exposure_table")))
                       withSpinner(DTOutput("exposure_table_real"))
                     )
                   ),
@@ -183,41 +182,34 @@ body <- dashboardBody(
                           "Add Box content here.", br(), "More content here."
                         ),
                       ),
-                      # box(
-                      #   title = "Exposure-Response Quantile Plot", # status = "warning", 
-                      #   solidHeader = TRUE, width = 10, # height = 500,
-                      #   "Add Box content here.", br(), "More content here.",
-                      #   # column(6, div(id = "plot1_container", withSpinner(plotOutput("plot1"))))
-                      #   withSpinner(plotOutput("plot1_real"))
-                      # ),
                     ),
                   tabPanel(
                     "Results",
                     box(
                       title = "DER Model: Fitted Curve", status = "warning", 
-                      solidHeader = TRUE, width = 7,
+                      solidHeader = TRUE, width = 7, height = "475px",
                       withSpinner(plotOutput("DER_plot")),
                     ),
                     box(
                       title = "DE Model: Summary", status = "warning", 
-                      solidHeader = TRUE, width = 5,
+                      solidHeader = TRUE, width = 5, height = "475px",
                       verbatimTextOutput("de_summary")
                     ),
                     box(
                       title = "ER Model: Fitted Curve with Data Points", status = "warning",
-                      solidHeader = TRUE, width = 7,
+                      solidHeader = TRUE, width = 7, height = "475px",
                       withSpinner(plotOutput("ER_plot")),
                     ),
                     box(
-                      titile = "DE Model: Fitted Curve with Data Points", status = "warning",
-                      solidHeader = TRUE, width = 5,
+                      title = "DE Model: Fitted Curve with Data Points", status = "warning",
+                      solidHeader = TRUE, width = 5, height = "475px",
                       withSpinner(plotOutput("DE_plot"))
                     ),
                     conditionalPanel(
                       condition = "input.responseType == 'Continuous'",
                       box(
                         title = "ER Model: Q-Q Plot of Residuals", status = "warning", 
-                        solidHeader = TRUE, width = 7,
+                        solidHeader = TRUE, width = 7, height = "475px",
                         withSpinner(plotOutput("ER_qqplot")),
                         "Add Box content here.", br(), "More content here."
                         ),
@@ -229,7 +221,7 @@ body <- dashboardBody(
                         ),
                       box(
                         title = "ER Model: Residuals vs Fitted Values Plot", status = "warning", 
-                        solidHeader = TRUE, width = 8,
+                        solidHeader = TRUE, width = 8, height = "475px",
                         withSpinner(plotOutput("ER_ResFitplot")),
                         "Add Box content here.", br(), "More content here."
                         ),
@@ -238,7 +230,7 @@ body <- dashboardBody(
                       condition = "input.responseType == 'Binary'",
                       box(
                         title = "ER Model: ROC Curve", status = "warning", 
-                        solidHeader = TRUE, width = 7,
+                        solidHeader = TRUE, width = 7, height = "520px",
                         withSpinner(plotOutput("ER_ROCplot")),
                         textOutput("AUC_text"),
                         "Add Box content here.", br(), "More content here."
@@ -274,7 +266,7 @@ body <- dashboardBody(
                       sliderTextInput(
                         inputId = "conf_lvl1",
                         label = "Confidence Level:", 
-                        choices = c(0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.98),
+                        choices = c(0.10, 0.25, 0.50, 0.75, 0.80, 0.90, 0.95),
                         selected = 0.95,
                         grid = TRUE
                       ),
