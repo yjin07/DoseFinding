@@ -1,5 +1,5 @@
 source("utils/fitERMod.R")
-
+library(ggplot2)
 # ----------------------------------
 # Example (Exposure-Response Model)
 # ----------------------------------
@@ -131,13 +131,13 @@ library(dplyr)     # for data manipulation
 # * Continuous response case (ER)
 # * ==================================
 source("utils/fitERMod.R")
-# set.seed(1000)
-e0 <- 20
-eMax <- 100
+set.seed(1000)
+e0 <- log(20) / 2
+eMax <- log(100) / 2
 h <- 4
 EC50 <- 5
 sigma_c <- 0.5
-sigma_y <- 0.2
+sigma_y <- exp(0.2)
 TVCL <- 5                                       # ? Typical Value of Clearance
 beta0 <- -log(TVCL)
 beta1 <- 0.85
@@ -148,32 +148,42 @@ cat("Total number of observations: ", sum(reps), "\n")
 ds <- rep(doses, reps)
 
 logC <- beta0 + beta1 * log(ds) + rnorm(sum(reps), 0, sigma_c)
-CC <- exp(logC)
-logY <- log(e0 + eMax / (1 + (EC50 / CC)^h)) + rnorm(sum(reps), 0, sigma_y)   # ? True model: sigEmax
+CC <- round(exp(logC), 3)
+logY <- e0 + eMax / (1 + (EC50 / CC)^h) + rnorm(sum(reps), 0, sigma_y)   # ? True model: sigEmax
 Y <- exp(logY)
 
 df <- data.frame(Dose = ds, Exposure = CC, Response = Y)
 
-# model <- "sigEmax"
-# fit <- fitERMod(df$Exposure, df$Response, model = model, type = "gaussian")
-# pred <- predict(fit, newdata = df$Exposure)
-# print(pred)
-# Y - pred
+
+saveRDS(df, "data/DER_cont.rds")
+write.csv(df, "data/DER_cont.csv", row.names = FALSE)
+write.table(df, "data/DER_cont.txt", row.names = FALSE, sep = "\t")
+
+model <- "sigEmax"
+fit <- fitERMod(df$Exposure, df$Response, model = model, type = "gaussian")
+pred <- predict(fit, newdata = df$Exposure)
+print(pred)
+log(Y) - pred
 
 
-models <- c("sigEmax", "Emax", "Expo", "Beta", "Linear", "LinearLog", "Logistic", "Quadratic")
-for (iii in 1:length(models)) {
-    cat("Model: ", models[iii], "\n")
-    model <- models[iii]
-    fit <- fitERMod(df$Exposure, df$Response, model = model, type = "gaussian")
-    print(all.equal(fit$residuals, Y - predict(fit, newdata = df$Exposure)))
-}
+
+# models <- c("sigEmax", "Emax", "Expo", "Beta", "Linear", "LinearLog", "Logistic", "Quadratic")
+# for (iii in 1:length(models)) {
+#     cat("Model: ", models[iii], "\n")
+#     model <- models[iii]
+#     fit <- fitERMod(df$Exposure, df$Response, model = model, type = "gaussian")
+#     print(all.equal(fit$residuals, Y - predict(fit, newdata = df$Exposure)))
+# }
+
+
+fit <- fitERMod(df$Exposure, df$Response, model = "sigEmax", type = "gaussian")
 
 
 # * ==================================
 # * Binary response case (ER)
 # * ==================================
 source("utils/fitERMod.R")
+set.seed(1024)
 e0 <- logit(0.1)
 eMax <- 3
 h <- 4
@@ -190,12 +200,16 @@ cat("Total number of observations: ", sum(reps), "\n")
 ds <- rep(doses, reps)
 
 logC <- beta0 + beta1 * log(ds) + rnorm(sum(reps), 0, sigma_c)
-CC <- exp(logC)
+CC <- round(exp(logC), 3)
 logitP <- e0 + eMax / (1 + (EC50 / CC)^h)       # ? True model: sigEmax
 Ps <- inv_logit(logitP)
 Y <- rbinom(sum(reps), 1, Ps)
 
 df <- data.frame(Dose = ds, Exposure = CC, Response = Y)
+
+saveRDS(df, "data/DER_bin.rds")
+write.csv(df, "data/DER_bin.csv", row.names = FALSE)
+write.table(df, "data/DER_bin.txt", row.names = FALSE, sep = "\t")
 
 model <- "sigEmax"
 fit <- fitERMod(df$Exposure, df$Response, model = model, type = "binomial")
@@ -212,38 +226,71 @@ pred2 <- predict(fit2, newdata = newdoses)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # * ==================================
 # * Continuous response case (DER)
 # * ==================================
 source("utils/fitDERMod.R")
-# set.seed(1000)
-e0 <- 20
-eMax <- 100
-h <- 4
-EC50 <- 5
-sigma_c <- 0.5
-sigma_y <- 0.2
-TVCL <- 5                                       # ? Typical Value of Clearance
-beta0 <- -log(TVCL)
-beta1 <- 0.85
-
-doses <- c(20, 30, 48, 60, 80, 100, 110)        # ? Do not consider the placebo
-reps <- c(3, 3, 6, 8, 12, 18, 10)
-cat("Total number of observations: ", sum(reps), "\n")
-ds <- rep(doses, reps)
-
-logC <- beta0 + beta1 * log(ds) + rnorm(sum(reps), 0, sigma_c)
-CC <- exp(logC)
-logY <- log(e0 + eMax / (1 + (EC50 / CC)^h)) + rnorm(sum(reps), 0, sigma_y)   # ? True model: sigEmax
-Y <- exp(logY)
-
-df <- data.frame(Dose = ds, Exposure = CC, Response = Y)
+df <- readRDS("data/DER_cont.rds")
 
 model <- "sigEmax"
 fit <- fitDERMod(df$Dose, df$Exposure, df$Response, model = model, type = "gaussian")
 pred <- predict(fit, newdata = unique(df$Dose))
 print(pred)
-Y - pred
+
+
+new_doses <- seq(min(df$Dose), max(df$Dose), by = 2)
+fit_de <- fit$fit2
+logC <- predict(fit_de, newdata = data.frame(dose = new_doses))
+
+plot(df$Dose, df$Exposure)
+lines(new_doses, logC, col = "red")
+
+
+ds0 <- unique(df$Dose)
+CC0 <- exp(beta0 + beta1 * log(ds0))
+logY0 <- log(e0 + eMax / (1 + (EC50 / CC0)^h))
+Y0 <- exp(logY0)
+Y0 - pred
+
+
+
+source("utils/fitDERMod.R")
+fit.der <- fitDERMod(df$Dose, df$Exposure, df$Response, model = "sigEmax", type = "gaussian")
+
+
+new_doses <- seq(min(df$Dose), max(df$Dose), by = 2)
+fitted_values2 <- predict(fit.der, newdata = new_doses, type = "response")
+fit_df2 <- data.frame(Dose = new_doses, Fitted = fitted_values2)
+
+p <- ggplot() +
+    geom_point(data = df, aes(x = Dose, y = log(Response)), color = "blue", alpha = 0.5) +  # 数据点
+    geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线
+    labs( #title = "Fitted Curve with Data Points",
+        x = "Dose",
+        y = "log(Response)") +
+    theme_minimal()
+
+p
 
 
 # models <- c("sigEmax", "Emax", "Expo", "Beta", "Linear", "LinearLog", "Logistic", "Quadratic")
@@ -259,28 +306,7 @@ Y - pred
 # * Binary response case (DER)
 # * ==================================
 source("utils/fitERMod.R")
-e0 <- logit(0.1)
-eMax <- 3
-h <- 4
-EC50 <- 5
-sigma_c <- 0.5
-sigma_y <- 0.2
-TVCL <- 5                                       # ? Typical Value of Clearance
-beta0 <- -log(TVCL)
-beta1 <- 0.85
-
-doses <- c(20, 30, 48, 60, 80, 100, 110)        # ? Do not consider the placebo
-reps <- c(3, 3, 6, 8, 12, 18, 10)
-cat("Total number of observations: ", sum(reps), "\n")
-ds <- rep(doses, reps)
-
-logC <- beta0 + beta1 * log(ds) + rnorm(sum(reps), 0, sigma_c)
-CC <- exp(logC)
-logitP <- e0 + eMax / (1 + (EC50 / CC)^h)       # ? True model: sigEmax
-Ps <- inv_logit(logitP)
-Y <- rbinom(sum(reps), 1, Ps)
-
-df <- data.frame(Dose = ds, Exposure = CC, Response = Y)
+df <- readRDS("data/DER_bin.rds")
 
 model <- "sigEmax"
 fit <- fitERMod(df$Exposure, df$Response, model = model, type = "binomial")
@@ -291,6 +317,38 @@ print(pred)
 
 
 fit2 <- lm(log(CC) ~ log(ds))
+fit2$coefficients
 
-newdoses <- data.frame(ds = c(20))
-pred2 <- predict(fit2, newdata = newdoses)
+# newdoses <- data.frame(ds = c(20))
+# pred2 <- predict(fit2, newdata = newdoses)    # * log(CC)
+# CC.pred <- exp(pred2)                         # * CC
+
+# predict_DER <- function(dose, fit_exp, fit_resp, type = 'response') {
+#     newdoses <- data.frame(ds = dose)
+#     log_CC_pred <- predict(fit_exp, newdata = newdoses)         # 预测log(CC)
+#     CC_pred <- exp(log_CC_pred)                                 # 转换为CC
+#     response_pred <- predict(fit_resp, newdata = CC_pred, type = type)
+#     return(response_pred)
+# }
+
+# predict_DER(110, fit2, fit)
+
+source("utils/fitDERMod.R")
+fit.der <- fitDERMod(df$Dose, df$Exposure, df$Response, model = "sigEmax", type = "binomial")
+
+
+new_doses <- seq(min(df$Dose), max(df$Dose), by = 2)
+fitted_values2 <- predict(fit.der, newdata = new_doses, type = "response")
+fit_df2 <- data.frame(Dose = new_doses, Fitted = inv_logit(fitted_values2))
+
+p <- ggplot() +
+    geom_jitter(data = df, aes(x = Dose, y = Response), color = "blue", alpha = 0.5, width = 0, height = 0.05) +  # 数据点
+    geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线
+    labs( #title = "Fitted Curve with Data Points",
+        x = "Dose",
+        y = "Response") +
+    theme_minimal()
+
+p
+
+

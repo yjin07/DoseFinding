@@ -57,7 +57,7 @@ fitERMod <- function(exposure, resp, model = NULL, type = c("gaussian", "binomia
     }
 
     names(fit) <- param_names
-    print(fit)
+    # print(fit)
 
     fit_list <- list(model = model, coeffs = as.list(fit), scale = scale, off = off, type = type)
 
@@ -75,7 +75,7 @@ fitERMod <- function(exposure, resp, model = NULL, type = c("gaussian", "binomia
         fit_list$deviance <- sum(devResiduals^2)
         fit_list$logLike <- sum(resp * log(fitted_values) + (1 - resp) * log(1 - fitted_values))
     } else if (type == 'gaussian') {
-        residuals <- log(resp) - log(fitted_values)
+        residuals <- log(resp) - fitted_values
         residuals_sq <- sum(residuals^2)
         sigma_sq <- residuals_sq / fit_list$df.residual
 
@@ -90,6 +90,11 @@ fitERMod <- function(exposure, resp, model = NULL, type = c("gaussian", "binomia
     return(fit_list)
 }
 
+
+# * -------------------------------------------------
+# * In this predict method, the response of continuous
+# * case is **not** in log scale.
+# * -------------------------------------------------
 predict.ERMod <- function(object, newdata, type = 'response', ...) {
     if (missing(newdata)) {
         stop("newdata must be provided")

@@ -7,7 +7,7 @@ $$\mu_c = f_m(c; \theta_m) $$
 where $f_m$ denotes the exposure-response function, $c$ is the exposure, and $\theta_m$ is the vector of parameters of the exposure-response function.
 
 For the <mark>continous-response</mark> case, the response is assume to follow a lognormal distribution conditional on the exposure as follows:
-$$log(Y) \sim N(\log(\mu_c), ~\sigma^2)$$
+$$log(Y) \sim N(\mu_c, ~\sigma^2)$$
 
 For the <mark>binary-response</mark> case, we assume that
 $$\text{logit}(P(Y=1)) = \mu_c$$
@@ -55,3 +55,11 @@ $$\log(C) = \alpha + \beta\log(d) + \varepsilon_C$$
 > where $CL$ is the clearance, and is assumed to have a lognoremal distribution
 > $$\log(CL)\sim N(\log(TVCL), ~\sigma^2)$$
 > where $TVCL$ denotes the typical value of clearance.
+
+
+
+## 3. Model Diagnostics
+
+### 3.1 Binary Response
+
++ [Deviance residuals](https://library.virginia.edu/data/articles/understanding-deviance-residuals)

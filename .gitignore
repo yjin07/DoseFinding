@@ -5,3 +5,4 @@ DoseFinding
 test.R
 cached/*
 .vscode/*
+data/*

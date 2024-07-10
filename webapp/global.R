@@ -16,6 +16,7 @@ library(ResourceSelection)
 
 
 source(here("utils", "fitERMod.R"))
+source(here("utils", "fitDERMod.R"))
 
 
 # ? ----------------------------------

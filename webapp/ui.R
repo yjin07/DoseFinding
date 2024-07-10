@@ -83,9 +83,11 @@ siderbar <- dashboardSidebar(
         radioGroupButtons(
           inputId = "responseType",
           label = NULL, 
-            choices = c("Continuous", "Binary"),
-            # checkIcon = list(yes = icon("square-check"), no = icon("square")),
-          status = "info", justified = TRUE, direction = "horizontal",
+          choices = c("Continuous", "Binary"),
+          # checkIcon = list(yes = icon("ok"), no = icon("square")),
+          checkIcon = list(yes = icon("ok", lib = "glyphicon")),
+          # status = "info", 
+          justified = TRUE, direction = "horizontal",
           width = '250px'
         ),
       ),
@@ -192,14 +194,24 @@ body <- dashboardBody(
                   tabPanel(
                     "Results",
                     box(
-                      title = "ER Model: Fitted Curve with Data Points", status = "warning",
+                      title = "DER Model: Fitted Curve", status = "warning", 
                       solidHeader = TRUE, width = 7,
-                      withSpinner(plotOutput("ER_plot")),
+                      withSpinner(plotOutput("DER_plot")),
                     ),
                     box(
                       title = "DE Model: Summary", status = "warning", 
                       solidHeader = TRUE, width = 5,
                       verbatimTextOutput("de_summary")
+                    ),
+                    box(
+                      title = "ER Model: Fitted Curve with Data Points", status = "warning",
+                      solidHeader = TRUE, width = 7,
+                      withSpinner(plotOutput("ER_plot")),
+                    ),
+                    box(
+                      titile = "DE Model: Fitted Curve with Data Points", status = "warning",
+                      solidHeader = TRUE, width = 5,
+                      withSpinner(plotOutput("DE_plot"))
                     ),
                     conditionalPanel(
                       condition = "input.responseType == 'Continuous'",
@@ -243,6 +255,35 @@ body <- dashboardBody(
                         solidHeader = TRUE, width = 8,
                         verbatimTextOutput("HL_test"),
                       ),
+                    )
+                  ),
+                  tabPanel(
+                    "Bootstrap",
+                    box(
+                      title = NULL, solidHeader = FALSE,
+                      width = 6, height = "150px",
+                      sliderTextInput(
+                          inputId = "n_bootstrap",
+                          label = "Bootstrap Replicates:", 
+                          choices = c(100, 500, 1000, 5000, 10000),
+                          grid = TRUE
+                        ),
+                    ),
+                    box(
+                      width = 4, height = "150px",
+                      sliderTextInput(
+                        inputId = "conf_lvl1",
+                        label = "Confidence Level:", 
+                        choices = c(0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.98),
+                        selected = 0.95,
+                        grid = TRUE
+                      ),
+                      actionButton("run_bootstrap", "Run Bootstrap", icon = icon("play"), style = 'width: 88%;')
+                    ),
+                    box(
+                      title = "DER Model: Fitted Curve", status = "warning", 
+                      solidHeader = TRUE, width = 10,
+                      withSpinner(plotOutput("DER_bootstrapPlot")),
                     )
                   ),
                 ),
