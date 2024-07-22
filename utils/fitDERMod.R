@@ -1,4 +1,4 @@
-fitDERMod <- function(dose, exposure, resp, model = NULL, 
+fitDERMod <- function(dose, exposure, resp, model = NULL, data = NULL,
                     type = c("gaussian", "binomial"), 
                     addCovar = ~1, addArgs = NULL) {
 
@@ -6,30 +6,32 @@ fitDERMod <- function(dose, exposure, resp, model = NULL,
         stop("Invalid model specified.")
     }
 
+    if (!inherits(addCovar, "formula")) {
+        stop("addCovar must be a formula.")
+    }
+
+    if (addCovar != ~1) {
+        covar_vars <- all.vars(addCovar)
+        if (!all(covar_vars %in% names(data))) {
+            stop("Some variables in addCovar are not present in the data.")
+        }
+    }
+
     fit1 <- fitERMod(exposure, resp, model = model, type = type, addArgs = addArgs)
-    fit2 <- lm(log(exposure) ~ log(dose))
+
+    if (addCovar != ~1) {
+        formula <- as.formula(paste("log(exposure) ~ log(dose) + ", as.character(addCovar)[2]))
+        fit2 <- lm(formula, data = data)
+    } else {
+        fit2 <- lm(log(exposure) ~ log(dose))
+    }
+
     sigma_c <- sqrt(sum(fit2$residuals^2) / fit2$df.residual)
     output <- list(fit1 = fit1, fit2 = fit2, sigma_c = sigma_c, type = type)
 
     class(output) <- "DERMod"
     return(output)
 }
-
-# predict.DERMod <- function(object, newdata, n = 1e3, type = "response") {
-#     fit1 <- object$fit1
-#     fit2 <- object$fit2
-
-#     newdata <- data.frame(dose = newdata)
-#     logC <- predict(fit2, newdata = newdata)
-
-#     logCs <- logC + object$sigma_c * rnorm(n)
-#     CCs <- exp(logCs)
-    
-#     resp <- predict(fit1, newdata = CCs, type = type)
-#     # print(resp)
-#     # cat("Mean of response:", mean(resp), "\n")
-#     return(mean(resp))
-# }
 
 
 # * -------------------------------------------------

@@ -46,10 +46,38 @@ server <- function(input, output, session) {
           inline = TRUE,
           status = "danger"
         ),
-        actionButton("run_analysis", "Rerun with more covariates", icon = icon("play"), style = 'width: 50%;')
       )
     })
   })
+
+
+  # * Be careful with the `observeEvent` and `observe` functions
+  # observeEvent(input$selectCovs, {        
+  observe({
+    cat("Selected covariates: ", input$selectCovs, "\n")
+    selected_vars <- input$selectCovs
+
+    output$select_covs_type <- renderUI({
+      if (length(selected_vars) == 0) return(NULL)
+
+      tagList(
+        h5("Select type for variables:", style = "font-weight: bold;"),  # 加粗
+        lapply(selected_vars, function(var) {
+          div(
+            style = "display: flex; align-items: center;",
+            div(style = "margin-right: 10px; align-items: center;", h5(paste("$", var))),
+            div(style = "margin-right: 10px; align-items: center;",
+              prettyRadioButtons(inputId = paste0("type_", var),
+                          label = NULL,
+                          choices = c("Continuous", "Categorical"),
+                          inline = TRUE)
+            ),
+          )
+        }),
+      )
+    })
+  })
+
 
   observeEvent(ignoreInit = TRUE, list(
     input$modelType,
@@ -73,6 +101,40 @@ server <- function(input, output, session) {
     } else {
       get_dr_results(df, input, output)  # TODO: to be implemented
     }
+  })
+
+  observeEvent(input$run_analysis, {
+    req(myData())
+    df <- myData()
+
+    if (is.null(input$selectCovs)) {
+      showModal(modalDialog(
+        title = "Error",
+        "No covariates selected. Please select at least one covariate.",
+        easyClose = TRUE,
+        footer = NULL
+      ))
+      return()
+    }
+
+    # Construct the formula
+    covars <- lapply(input$selectCovs, function(var) {
+      var_type <- input[[paste0("type_", var)]]
+      if (var_type == "Categorical") {
+        return(paste0("factor(", var, ")"))
+      } else {
+        return(var)
+      }
+    })
+    covars <- paste(covars, collapse = " + ")
+    addCovar <- as.formula(paste("~", covars))
+
+    cat("Generated formula: ", deparse(addCovar), "\n")
+
+
+
+    # TODO: continue the work from here
+
   })
 
   observeEvent(input$run_bootstrap, {

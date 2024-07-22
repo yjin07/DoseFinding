@@ -288,8 +288,13 @@ body <- dashboardBody(
               condition = "input.modelType == 'DER'",
               box(
                 title = NULL, solidHeader = FALSE,
-                width = 10, height = "150px",
+                width = 10, # height = "150px",
                 uiOutput("select_covs"),
+                uiOutput("select_covs_type"),
+                div(
+                  style = "display: flex; justify-content: right;",
+                  actionButton("run_analysis", "Run model again", icon = icon("play"), style = 'width: 60%;'),
+                )
               ),
               box(
                 title = "DER Model: Fitted Curve", status = "primary", 
@@ -366,16 +371,23 @@ body <- dashboardBody(
             "Bootstrap",
             box(
               title = NULL, solidHeader = FALSE,
-              width = 6, height = "150px",
+              width = 6, height = "160px",
               sliderTextInput(
                 inputId = "n_bootstrap",
                 label = "Bootstrap Replicates:", 
                 choices = c(100, 500, 1000, 5000, 10000),
                 grid = TRUE
               ),
+              prettyRadioButtons(
+                inputId = "sampling_method",
+                label = "Resamling Method:", 
+                choices = list("Full" = "total", "By Dose" = "by_dose"),
+                inline = TRUE, 
+                fill = TRUE
+              )
             ),
             box(
-              width = 4, height = "150px",
+              width = 4, height = "160px",
               sliderTextInput(
                 inputId = "conf_lvl1",
                 label = "Confidence Level:", 
