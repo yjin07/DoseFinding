@@ -11,12 +11,13 @@ get_dr_bootstrap <- function(df, input, output) {
         fit_df2 <- data.frame(Dose = new_doses, Fitted = inv_logit(fitted_values))
     }
 
-    log_info("Bootstrap started...")
+    log_info("Bootstrap started with sampling method:", input$sampling_method)
     fitted_vals_bootstrap <- matrix(NA, nrow = n_bootstrap, ncol = length(new_doses))
 
     withProgress(message = "Run Bootstrap replicates", value = 0, {
         for (jj in 1:n_bootstrap) {
-            ind <- sample(1:nrow(df), nrow(df), replace = TRUE)
+            # ind <- sample(1:nrow(df), nrow(df), replace = TRUE)
+            ind <- bootstrap_indices(df, method = input$sampling_method)
             fit_dr0 <- fitERMod(df$Dose[ind], df$Response[ind], model = input$dr_model, type = type)
             if (input$responseType == "Continuous") {
                 fitted_vals_bootstrap[jj, ] <- predict(fit_dr0, newdata = new_doses, type = "response")

@@ -19,6 +19,7 @@ source(here("utils", "fitERMod.R"))
 source(here("utils", "fitDERMod.R"))
 
 # source(here("webapp/R", "simulate.R"))         # * only used in the development version with `simulate` section
+source(here("webapp/R", "sampling.R"))
 source(here("webapp/R", "visualization.R"))
 source(here("webapp/R", "results-der.R"))
 source(here("webapp/R", "bootstrap-der.R"))
