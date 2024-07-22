@@ -1,15 +1,17 @@
-# Dose-Exposure-Response modeling
+# Dose-Exposure-Response Modeling
+
+
 
 ## 1. Exposure-Response model
 
-Assuming that the median response $\mu$ as a function of exposure is represented by
+Assuming that $\mu_c$ as a function of exposure is represented by
 $$\mu_c = f_m(c; \theta_m) $$
 where $f_m$ denotes the exposure-response function, $c$ is the exposure, and $\theta_m$ is the vector of parameters of the exposure-response function.
 
-For the <mark>continous-response</mark> case, the response is assume to follow a lognormal distribution conditional on the exposure as follows:
+For the **continous-response** case, the response is assume to follow a lognormal distribution conditional on the exposure as follows:
 $$log(Y) \sim N(\mu_c, ~\sigma^2)$$
 
-For the <mark>binary-response</mark> case, we assume that
+For the **binary-response** case, we assume that
 $$\text{logit}(P(Y=1)) = \mu_c$$
 
 > <u>ER functions</u>:
@@ -20,16 +22,16 @@ $$\text{logit}(P(Y=1)) = \mu_c$$
 >    $$f(c, \theta) = E_0 + E_{\max}\frac{c^h}{EC_{50}^h + c^h}$$
 >
 >+ **Exponential**: *captures a possible sub-linear or a convex shape*
->    $$f(c, \theta) = E_0 + E_1 (\exp(\frac{c}{\delta}) + 1)$$
+>    $$f(c, \theta) = E_0 + E_1 (\exp(\frac{c}{\delta}) - 1)$$
 >
->+ **Beta**: *captures non-monotone exposure-response relationships and is more flexible than the quadratic model*. <mark>$scal$ is not estimated</mark>
+>+ **Beta**: *captures non-monotone exposure-response relationships and is more flexible than the quadratic model*. Note that $scal$ is not estimated.
 >    $$f(c, \theta) = E_0 + E_{\max}B(\delta_1, \delta_2)(c/scal)^{\delta_1}(1-c/scal)^{\delta_2}$$
 >    where $B(\delta_1,\delta_2) = (\delta_1 + \delta_2)^{\delta_1+\delta_2}/(\delta_1^{\delta_1}\delta_2^{\delta_2})$
 >
 >+ **Linear**
 >    $$f(c, \theta) = E_0 + \delta c$$
 >
->+ **Linear in log**: <mark>$off$ is not estimated</mark>
+>+ **Linear in log**: Note that $off$ is not estimated.
 >    $$f(c, \theta) = E_0 + \delta\log(c + off)$$
 >
 >
