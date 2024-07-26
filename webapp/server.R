@@ -61,7 +61,7 @@ server <- function(input, output, session) {
       if (length(selected_vars) == 0) return(NULL)
 
       tagList(
-        h5("Select type for variables:", style = "font-weight: bold;"),  # 加粗
+        h5("Select type for variables:", style = "font-weight: bold;"),
         lapply(selected_vars, function(var) {
           div(
             style = "display: flex; align-items: center;",
@@ -99,7 +99,7 @@ server <- function(input, output, session) {
     if (input$modelType == 'DER') {
       get_der_results(df, input, output)
     } else {
-      get_dr_results(df, input, output)  # TODO: to be implemented
+      get_dr_results(df, input, output)
     }
   })
 
@@ -130,11 +130,10 @@ server <- function(input, output, session) {
     addCovar <- as.formula(paste("~", covars))
 
     cat("Generated formula: ", deparse(addCovar), "\n")
-
-
-
+    
     # TODO: continue the work from here
-
+    get_der_results_withCovars(df, input, output, addCovar)
+    
   })
 
   observeEvent(input$run_bootstrap, {
@@ -152,7 +151,7 @@ server <- function(input, output, session) {
     if (input$modelType == 'DER') {
       get_der_bootstrap(df, input, output)
     } else {
-      get_dr_bootstrap(df, input, output)  # TODO: to be implemented
+      get_dr_bootstrap(df, input, output)
     }
   })
 }

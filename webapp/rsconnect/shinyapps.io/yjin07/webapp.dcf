@@ -1,0 +1,10 @@
+name: webapp
+title:
+username: yjin07
+account: yjin07
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 12367283
+bundleId: 8908701
+url: https://yjin07.shinyapps.io/webapp/
+version: 1

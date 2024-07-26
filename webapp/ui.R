@@ -148,8 +148,16 @@ siderbar <- dashboardSidebar(
 
 body <- dashboardBody(
   tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+    tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
+    tags$script(src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"),  # 加载 MathJax
   ),
+  tags$style(HTML("
+    .content-wrapper, .right-side {
+      background-color: white;
+      overflow: auto;
+    }
+    /* 其他布局调整 */
+  ")),
   tabItems(
     # tabItem(tabName = "simulate",
     #       div(class = "my-class", h1("Hello world"), p("This is a paragraph, which can be used for instructions.")),
@@ -182,22 +190,23 @@ body <- dashboardBody(
           title = "Add Title Here", width = 12, height = 800,
           tabPanel(
             "Description",
-            h2("Data preview"),
-            fluidRow(
+            # fluidRow(
               box(
-                width = 4,
+                title = HTML("<b>Data Preview</b>"),
+                solidHeader = TRUE, width = 10,
                 tableOutput("data_preview")
                 ),
               box(
-                width = 8,
+                title = HTML("<b>Summary Statistics</b>"),
+                solidHeader = TRUE, width = 10,
                 verbatimTextOutput("data_description")
               )
-            )
+            # )
           ),
           tabPanel(
-            "View", "Add Data content here.",
+            "View",
             box(
-              title = "Source Data", # status = "primary", 
+              title = HTML("<b>Source Data</b>"), # status = "primary", 
               solidHeader = TRUE, width = 6, # height = 600,
               withSpinner(DTOutput("exposure_table_real"))
             )
@@ -227,9 +236,14 @@ body <- dashboardBody(
             conditionalPanel(
               condition = "input.modelType == 'DR'",
               box(
-                title = "DR Model: Fitted Curve", status = "primary", 
-                solidHeader = TRUE, width = 7, height = "475px",
+                title = "DR Model: Fitted Curve", status = "info", 
+                solidHeader = TRUE, width = 6, height = "475px",
                 withSpinner(plotOutput("DR_plot")),
+              ),
+              box(
+                title = "DR Model: Summary", status = "info", 
+                solidHeader = TRUE, width = 6, height = "475px",
+                verbatimTextOutput("DR_summary")
               ),
               # ! ----------------------
               # ! Continuous Response
@@ -237,20 +251,14 @@ body <- dashboardBody(
               conditionalPanel(
                 condition = "input.responseType == 'Continuous'",
                 box(
-                  title = "DR Model: Residuals & AIC", status = "warning", 
-                  solidHeader = TRUE, width = 5, # height = "475px",
-                  verbatimTextOutput("DR_residuals"),
-                  verbatimTextOutput("DR_AIC"),
-                ),
-                box(
-                  title = "DR Model: Q-Q Plot of Residuals", status = "warning", 
-                  solidHeader = TRUE, width = 7, height = "475px",
+                  title = "DR Model: Q-Q Plot of Residuals", status = "info", 
+                  solidHeader = TRUE, width = 6, height = "475px",
                   withSpinner(plotOutput("DR_qqplot")),
                   "Add Box content here.", br(), "More content here."
                 ),
                 box(
-                  title = "DR Model: Residuals vs Fitted Values Plot", status = "warning", 
-                  solidHeader = TRUE, width = 7, height = "475px",
+                  title = "DR Model: Residuals vs Fitted Values Plot", status = "info", 
+                  solidHeader = TRUE, width = 6, height = "475px",
                   withSpinner(plotOutput("DR_ResFitplot")),
                   "Add Box content here.", br(), "More content here."
                 ),
@@ -261,23 +269,10 @@ body <- dashboardBody(
               conditionalPanel(
                 condition = "input.responseType == 'Binary'",
                 box(
-                  title = "DR Model: Deviance Residuals", status = "warning", solidHeader = TRUE, width = 5,
-                  "Deviance residuals:",
-                  verbatimTextOutput("DR_devResiduals"),
-                  "Residual deviance:",
-                  verbatimTextOutput("DR_deviance")
-                ),
-                box(
-                  title = "DR Model: Hosmer-Lemeshow Test", status = "warning",
-                  solidHeader = TRUE, width = 5,
-                  verbatimTextOutput("DR_HL_test"),
-                ),
-                box(
-                  title = "DR Model: ROC Curve", status = "warning", 
-                  solidHeader = TRUE, width = 7, height = "520px",
+                  title = "DR Model: ROC Curve", status = "info", 
+                  solidHeader = TRUE, width = 6, # height = "520px",
                   withSpinner(plotOutput("DR_ROCplot")),
                   textOutput("DR_AUC_text"),
-                  "Add Box content here.", br(), "More content here."
                 ),
               )
             ),
@@ -287,57 +282,66 @@ body <- dashboardBody(
             conditionalPanel(
               condition = "input.modelType == 'DER'",
               box(
-                title = NULL, solidHeader = FALSE,
+                title = NULL, solidHeader = TRUE,
                 width = 10, # height = "150px",
                 uiOutput("select_covs"),
                 uiOutput("select_covs_type"),
                 div(
                   style = "display: flex; justify-content: right;",
-                  actionButton("run_analysis", "Run model again", icon = icon("play"), style = 'width: 60%;'),
+                  actionButton("run_analysis", "Run model again", icon = icon("play"), style = 'width: 50%;'),
                 )
               ),
               box(
-                title = "DER Model: Fitted Curve", status = "primary", 
-                solidHeader = TRUE, width = 7, height = "475px",
+                title = "DER Model: Fitted Curve without Covariates", 
+                # status = "primary", 
+                solidHeader = TRUE, 
+                width = 8, height = "475px",
                 withSpinner(plotOutput("DER_plot")),
               ),
-              box(
-                title = "DE Model: Summary", status = "warning", 
-                solidHeader = TRUE, width = 5, height = "475px",
-                verbatimTextOutput("de_summary")
+              fluidRow(
+                box(
+                  title = "ER Model: Summary", status = "primary", 
+                  solidHeader = TRUE, width = 6, # height = "475px",
+                  verbatimTextOutput("ER_summary")
+                ),
+                box(
+                  title = "DE Model: Summary", status = "success", 
+                  solidHeader = TRUE, width = 6, # height = "475px",
+                  verbatimTextOutput("DE_summary")
+                ),
               ),
-              box(
-                title = "ER Model: Fitted Curve with Data Points", status = "warning",
-                solidHeader = TRUE, width = 7, height = "475px",
-                withSpinner(plotOutput("ER_plot")),
-              ),
-              box(
-                title = "DE Model: Fitted Curve with Data Points", status = "warning",
-                solidHeader = TRUE, width = 5, height = "475px",
-                withSpinner(plotOutput("DE_plot"))
+              fluidRow(
+                box(
+                  title = "ER Model: Fitted Curve with Data Points", status = "primary",
+                  solidHeader = TRUE, width = 6, height = "475px",
+                  withSpinner(plotOutput("ER_plot")),
+                ),
+                box(
+                  title = "DE Model: Fitted Curve with Data Points", status = "success",
+                  solidHeader = TRUE, width = 6, height = "475px",
+                  withSpinner(plotOutput("DE_plot"))
+                ),
               ),
               # ! ----------------------
               # ! Continuous Response
               # ! ----------------------
               conditionalPanel(
                 condition = "input.responseType == 'Continuous'",
-                box(
-                  title = "ER Model: Q-Q Plot of Residuals", status = "warning", 
-                  solidHeader = TRUE, width = 7, height = "475px",
-                  withSpinner(plotOutput("ER_qqplot")),
-                  "Add Box content here.", br(), "More content here."
-                  ),
-                box(
-                  title = "ER Model: Residuals  & AIC", status = "warning", 
-                  solidHeader = TRUE, width = 5,
-                  verbatimTextOutput("ER_residuals"),
-                  verbatimTextOutput("ER_AIC"),
-                  ),
-                box(
-                  title = "ER Model: Residuals vs Fitted Values Plot", status = "warning", 
-                  solidHeader = TRUE, width = 7, height = "475px",
-                  withSpinner(plotOutput("ER_ResFitplot")),
-                  "Add Box content here.", br(), "More content here."
+                fluidRow(
+                  box(
+                    title = "ER Model: Q-Q Plot of Residuals", 
+                    status = "primary", 
+                    solidHeader = TRUE, width = 6, height = "475px",
+                    withSpinner(plotOutput("ER_qqplot")),
+                    "Add Box content here.", br(), "More content here."
+                    ),
+                  box(
+                    title = "ER Model: Residuals vs Fitted Values Plot", 
+                    status = "primary", 
+                    solidHeader = TRUE, width = 6, height = "475px",
+                    withSpinner(plotOutput("ER_ResFitplot")),
+                    "Add Box content here.", br(), "More content here."
+                    ),
                   ),
                 ),
               # ! ----------------------
@@ -345,32 +349,21 @@ body <- dashboardBody(
               # ! ----------------------
               conditionalPanel(
                 condition = "input.responseType == 'Binary'",
-                box(
-                  title = "ER Model: ROC Curve", status = "warning", 
-                  solidHeader = TRUE, width = 7, height = "520px",
-                  withSpinner(plotOutput("ER_ROCplot")),
-                  textOutput("AUC_text"),
-                  "Add Box content here.", br(), "More content here."
-                  ),
-                box(
-                  title = "ER Model: Deviance Residuals", status = "warning", solidHeader = TRUE, width = 5,
-                  "Deviance residuals:",
-                  verbatimTextOutput("ER_devResiduals"),
-                  "Residual deviance:",
-                  verbatimTextOutput("ER_deviance")
-                ),
-                box(
-                  title = "ER Model: Hosmer-Lemeshow Test", status = "warning",
-                  solidHeader = TRUE, width = 5,
-                  verbatimTextOutput("HL_test"),
-                ),
+                fluidRow(
+                  box(
+                    title = "ER Model: ROC Curve", status = "primary", 
+                    solidHeader = TRUE, width = 6, # height = "520px",
+                    withSpinner(plotOutput("ER_ROCplot")),
+                    textOutput("ER_AUC_text"),
+                    ),
+                )
               ),
             ),
           ),
           tabPanel(
             "Bootstrap",
             box(
-              title = NULL, solidHeader = FALSE,
+              title = NULL, solidHeader = TRUE,
               width = 6, height = "160px",
               sliderTextInput(
                 inputId = "n_bootstrap",
@@ -388,6 +381,7 @@ body <- dashboardBody(
             ),
             box(
               width = 4, height = "160px",
+              solidHeader = TRUE,
               sliderTextInput(
                 inputId = "conf_lvl1",
                 label = "Confidence Level:", 
@@ -414,6 +408,10 @@ body <- dashboardBody(
               )
             ),
           ),
+          tabPanel(
+            "Documentation",
+            includeMarkdown("doc.md")
+          )
         ),
       )
     )

@@ -1,7 +1,8 @@
 library(here)
+library(ResourceSelection)
 
-source(here("utils", "ermodels.R"))
-source(here("utils", "Mods.R"))
+source(here("R/utils", "ermodels.R"))
+source(here("R/utils", "Mods.R"))
 
 # General function to fit an exposure-response model
 fitERMod <- function(exposure, resp, model = NULL, type = c("gaussian", "binomial"), addArgs = NULL) {
@@ -64,6 +65,7 @@ fitERMod <- function(exposure, resp, model = NULL, type = c("gaussian", "binomia
     n <- length(resp)
     fitted_values <- predict.ERMod(fit_list, exposure)
 
+    fit_list$response <- resp
     fit_list$fitted_values <- fitted_values
     fit_list$df.residual <- n - length(fit_list$coeffs)
 
@@ -89,6 +91,44 @@ fitERMod <- function(exposure, resp, model = NULL, type = c("gaussian", "binomia
     class(fit_list) <- "ERMod"
     return(fit_list)
 }
+
+
+# * -------------------------------------------------
+# * Summary method for ERMod object
+# * -------------------------------------------------
+summary.ERMod <- function(object) {
+    cat("\nCall:\n")
+    if (object$type == "binomial") {
+        cat("Model         : logit(P(Reponse = 1)) ~ g(Exposure)\n")
+    } else {
+        cat("Model         : log(Reponse) ~ g(Exposure)\n")
+    }
+    cat("Link func g   :", object$model, "\n")
+    cat("Response Type :", object$type, "\n\n")
+    cat("Coefficients:\n")
+    
+    # print(object$coeffs)
+    # cat("\n")
+    
+    coeffs_df <- as.data.frame(t(as.matrix(object$coeffs)))
+    print(coeffs_df, row.names = FALSE)
+
+    if (object$type == "binomial") {
+        cat("\nDeviance Residuals:\n")
+        print(round(quantile(object$devResiduals), 3))
+
+        cat("\nResidual deviance:", round(object$deviance, 3), "on", object$df.residual, "degrees of freedom.", "p-value:", round(1 - pchisq(object$deviance, object$df.residual), 3), "\nAIC:", round(object$AIC, 3), "Log-Likelihood:", round(object$logLike, 3), "\n")
+
+        hl_test <- hoslem.test(object$response, object$fitted_values, g = 10)
+        print(hl_test)
+    } else if (object$type == "gaussian") {
+        cat("\nResiduals:\n")
+        print(round(quantile(object$residuals), 3))
+        cat("\nAIC:", object$AIC, "Log-Likelihood:", round(object$logLike, 3), "\n")
+    }
+    
+}
+
 
 
 # * -------------------------------------------------
@@ -131,3 +171,5 @@ predict.ERMod <- function(object, newdata, type = 'response', ...) {
 
     return(pred)
 }
+
+

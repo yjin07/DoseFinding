@@ -190,7 +190,8 @@ generate_and_render_real_data <- function(output, data = NULL, input = NULL) {
     set.seed(1000)
     der_data <- generate_data_real()    # Generate data with Binary response by default
   } else {
-    der_data <- data
+    der_data <- na.omit(data)   # Remove NA values
+
   }
   
   output$exposure_table_real <- renderDT({
@@ -202,9 +203,18 @@ generate_and_render_real_data <- function(output, data = NULL, input = NULL) {
   })
 
   output$data_description <- renderPrint({
-    paste("This is a description of the data.")
     der_data1 <- der_data
     der_data1$Dose <- factor(der_data1$Dose)
+
+    # 将应转换为因子的变量转换为因子
+    der_data1 <- data.frame(lapply(der_data1, function(x) {
+      if (is.character(x) || is.factor(x) || (is.numeric(x) && length(unique(x)) < 10)) {
+        return(factor(x))
+      } else {
+        return(x)
+      }
+    }))
+
     summary(der_data1)
   })
 

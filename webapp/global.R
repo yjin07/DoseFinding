@@ -4,6 +4,7 @@ library(DT)
 library(shinyjs)
 library(shinycssloaders)
 library(shinyWidgets)
+library(markdown)
 
 library(logger)
 library(here)
@@ -15,16 +16,16 @@ library(pROC)
 library(ResourceSelection)
 
 
-source(here("utils", "fitERMod.R"))
-source(here("utils", "fitDERMod.R"))
+source(here("R/utils", "fitERMod.R"))
+source(here("R/utils", "fitDERMod.R"))
 
 # source(here("webapp/R", "simulate.R"))         # * only used in the development version with `simulate` section
-source(here("webapp/R", "sampling.R"))
-source(here("webapp/R", "visualization.R"))
-source(here("webapp/R", "results-der.R"))
-source(here("webapp/R", "bootstrap-der.R"))
-source(here("webapp/R", "results-dr.R"))
-source(here("webapp/R", "bootstrap-dr.R"))
+source(here("R", "sampling.R"))
+source(here("R", "visualization.R"))
+source(here("R", "results-der.R"))
+source(here("R", "bootstrap-der.R"))
+source(here("R", "results-dr.R"))
+source(here("R", "bootstrap-dr.R"))
 
 
 # uploadChecking <- function(input, myData) {

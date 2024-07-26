@@ -1,7 +1,10 @@
 get_dr_results <- function(df, input, output) {
     type <- ifelse(input$responseType == "Continuous", "gaussian", "binomial")
-    fit_dr <- fitERMod(df$Dose, df$Response, model = input$dr_model, type = type)
-    new_doses <- seq(min(df$Dose), max(df$Dose), by = 2)
+    valid_dr <- complete.cases(df$Dose, df$Response)
+    fit_dr <- fitERMod(df$Dose[valid_dr], df$Response[valid_dr], model = input$dr_model, type = type)
+
+    valid_dose <- complete.cases(df$Dose)
+    new_doses <- seq(min(df$Dose[valid_dose]), max(df$Dose[valid_dose]), by = 2)
     fitted_values <- predict(fit_dr, newdata = new_doses, type = "response")
 
     if (input$responseType == "Continuous") {
@@ -10,6 +13,10 @@ get_dr_results <- function(df, input, output) {
         fit_df2 <- data.frame(Dose = new_doses, Fitted = inv_logit(fitted_values))
     }
 
+
+    output$DR_summary <- renderPrint({
+        summary(fit_dr)
+    })
 
     if (input$responseType == "Continuous") {
         p_dr <- ggplot() +
@@ -20,13 +27,6 @@ get_dr_results <- function(df, input, output) {
                 y = "log(Response)") +
             theme_minimal()
 
-        output$DR_residuals <- renderPrint({
-            print(round(quantile(fit_dr$residuals), 3))
-        })
-
-        output$DR_AIC <- renderPrint({
-            cat("AIC:", round(fit_dr$AIC, 3))
-        })
 
         output$DR_qqplot <- renderPlot({
             qqnorm(fit_dr$residuals, main = "Q-Q plot of residuals")
@@ -54,19 +54,6 @@ get_dr_results <- function(df, input, output) {
         output$DR_AUC_text <- renderText({
             paste("AUC:", round(auc(roc_obj), 3))
         })
-
-        output$DR_HL_test <- renderPrint({
-            hl_test <- hoslem.test(df$Response, fit_dr$fitted_values, g = 10)
-            print(hl_test)
-        })
-
-        output$DR_devResiduals <- renderPrint({
-            print(round(quantile(fit_dr$devResiduals), 3))
-        })
-
-        output$DR_deviance <- renderPrint(
-            cat("Residual deviance:", round(fit_dr$deviance, 3), "on", fit_dr$df.residual, "degrees of freedom.", "P-value:", round(1 - pchisq(fit_dr$deviance, fit_dr$df.residual), 3), "\nAIC:", round(fit_dr$AIC, 3))
-            )
     }
 
     output$DR_plot <- renderPlot({

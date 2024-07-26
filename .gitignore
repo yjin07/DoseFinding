@@ -5,5 +5,7 @@ DoseFinding
 test.R
 cached/*
 .vscode/*
-data/*
 figs/*
+.DS_Store
+Main-*
+example.R

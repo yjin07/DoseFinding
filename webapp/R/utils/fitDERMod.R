@@ -1,27 +1,45 @@
-fitDERMod <- function(dose, exposure, resp, model = NULL, data = NULL,
+fitDERMod <- function(dose, exposure, resp, data = NULL, model = NULL, 
                     type = c("gaussian", "binomial"), 
-                    addCovar = ~1, addArgs = NULL) {
+                    addCovars = ~1, addArgs = NULL) {
 
     if (!model %in% names(model_info)) {
         stop("Invalid model specified.")
     }
 
-    if (!inherits(addCovar, "formula")) {
-        stop("addCovar must be a formula.")
+    if (!inherits(addCovars, "formula")) {
+        stop("addCovars must be a formula.")
     }
 
-    if (addCovar != ~1) {
-        covar_vars <- all.vars(addCovar)
+    valid_er <- complete.cases(exposure, resp)
+    exposure_valid <- exposure[valid_er]
+    resp_valid <- resp[valid_er]
+
+    fit1 <- fitERMod(exposure_valid, resp_valid, model = model, type = type, addArgs = addArgs)    
+
+    if (addCovars != ~1) {
+        covar_vars <- all.vars(addCovars)
         if (!all(covar_vars %in% names(data))) {
-            stop("Some variables in addCovar are not present in the data.")
+            stop("Some variables in addCovars are not present in the data.")
         }
     }
 
-    fit1 <- fitERMod(exposure, resp, model = model, type = type, addArgs = addArgs)
 
-    if (addCovar != ~1) {
-        formula <- as.formula(paste("log(exposure) ~ log(dose) + ", as.character(addCovar)[2]))
-        fit2 <- lm(formula, data = data)
+    if (addCovars != ~1) {
+        covar_vars <- all.vars(addCovars)
+        if (!all(covar_vars %in% names(data))) {
+            stop("Some variables in addCovars are not present in the data.")
+        }
+        valid_de <- complete.cases(dose, exposure, data[, covar_vars, drop = FALSE])
+    } else {
+        valid_de <- complete.cases(dose, exposure)
+    }
+
+    dose <- dose[valid_de]
+    exposure <- exposure[valid_de]
+
+    if (addCovars != ~1) {
+        formula <- as.formula(paste("log(exposure) ~ log(dose) + ", as.character(addCovars)[2]))
+        fit2 <- lm(formula, data = data[valid_de, , drop = FALSE])
     } else {
         fit2 <- lm(log(exposure) ~ log(dose))
     }
