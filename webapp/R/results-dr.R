@@ -1,7 +1,7 @@
 get_dr_results <- function(df, input, output) {
     type <- ifelse(input$responseType == "Continuous", "gaussian", "binomial")
     valid_dr <- complete.cases(df$Dose, df$Response)
-    fit_dr <- fitERMod(df$Dose[valid_dr], df$Response[valid_dr], model = input$dr_model, type = type)
+    fit_dr <- fitERMod(df$Dose[valid_dr], df$Response[valid_dr], model = input$dr_model, type = type, predictor = "Dose")
 
     valid_dose <- complete.cases(df$Dose)
     new_doses <- seq(min(df$Dose[valid_dose]), max(df$Dose[valid_dose]), by = 2)

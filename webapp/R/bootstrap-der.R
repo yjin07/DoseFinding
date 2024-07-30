@@ -1,5 +1,5 @@
 get_der_bootstrap <- function(df, input, output) {
-    n_bootstrap <- input$n_bootstrap
+    n_bootstrap <- input$n_bootstrap_der
     type <- ifelse(input$responseType == "Continuous", "gaussian", "binomial")
     fit_der <- fitDERMod(df$Dose, df$Exposure, df$Response, model = input$er_model, type = type)
     new_doses <- seq(min(df$Dose), max(df$Dose), by = 2)
@@ -11,12 +11,11 @@ get_der_bootstrap <- function(df, input, output) {
         fit_df2 <- data.frame(Dose = new_doses, Fitted = inv_logit(fitted_values2))
     }
 
-    log_info("Bootstrap started with sampling method:", input$sampling_method)
+    log_info("Bootstrap started with sampling method:", input$sampling_method_der)
     fitted_vals_bootstrap <- matrix(NA, nrow = n_bootstrap, ncol = length(new_doses))
 
     withProgress(message = "Run Bootstrap replicates", value = 0, {
         for (jj in 1:n_bootstrap) {
-            # ind <- sample(1:nrow(df), nrow(df), replace = TRUE)
             ind <- bootstrap_indices(df, method = input$sampling_method)
             fit_der0 <- fitDERMod(df$Dose[ind], df$Exposure[ind], df$Response[ind], model = input$er_model, type = type)
             if (input$responseType == "Continuous") {
@@ -34,7 +33,7 @@ get_der_bootstrap <- function(df, input, output) {
     log_info("Bootstrap finished...")
     log_info("Valid bootstrap samples:", nrow(fitted_vals_bootstrap))
 
-    q_lower <- (1 - input$conf_lvl1) / 2
+    q_lower <- (1 - input$conf_lvl1_der) / 2
     ci_low <- apply(fitted_vals_bootstrap, 2, function(x) quantile(x, q_lower))
     ci_high <- apply(fitted_vals_bootstrap, 2, function(x) quantile(x, 1 - q_lower))
 

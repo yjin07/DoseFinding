@@ -50,9 +50,21 @@ server <- function(input, output, session) {
     })
   })
 
+  observeEvent(input$modelType, {
+    output$dynamic_tabs <- renderUI({
+    log_info("Render dynamic tabs...")
+    if (input$modelType == 'DER') {
+      tagList(
+        tabPanel("ER Model", value = "er", "ER Model Content"),
+        tabPanel("DE Model", value = "de", "DE Model Content"),
+      )
+    } else {
+      tabPanel("DR Model", value = "dr", "DR Model Content")
+    }
+  })
+  })
 
-  # * Be careful with the `observeEvent` and `observe` functions
-  # observeEvent(input$selectCovs, {        
+
   observe({
     cat("Selected covariates: ", input$selectCovs, "\n")
     selected_vars <- input$selectCovs
@@ -63,21 +75,54 @@ server <- function(input, output, session) {
       tagList(
         h5("Select type for variables:", style = "font-weight: bold;"),
         lapply(selected_vars, function(var) {
+          var_type <- input[[paste0("type_", var)]] %||% "Continuous"
+
           div(
-            style = "display: flex; align-items: center;",
+            style = "display: flex; align-items: center; margin-bottom: 10px;",
             div(style = "margin-right: 10px; align-items: center;", h5(paste("$", var))),
             div(style = "margin-right: 10px; align-items: center;",
-              prettyRadioButtons(inputId = paste0("type_", var),
-                          label = NULL,
-                          choices = c("Continuous", "Categorical"),
-                          inline = TRUE)
+              prettyRadioButtons(
+                inputId = paste0("type_", var),
+                label = NULL,
+                choices = c("Continuous", "Categorical"),
+                inline = TRUE,
+                selected = var_type
+              )
             ),
+            div(style = "flex-grow: 1;",
+              conditionalPanel(
+                condition = sprintf("input['type_%s'] === 'Continuous'", var),
+                textInput(inputId = paste0("value_", var, "_continuous"), 
+                          label = NULL, 
+                          placeholder = "Enter value")
+              ),
+              conditionalPanel(
+                condition = sprintf("input['type_%s'] === 'Categorical'", var),
+                selectInput(inputId = paste0("value_", var, "_categorical"), 
+                            label = NULL, 
+                            choices = c("Loading..." = ""))
+              )
+            )
           )
-        }),
+        })
       )
     })
   })
 
+  # 更新分类变量的选项
+  observe({
+    req(input$selectCovs)
+    for (var in input$selectCovs) {
+      if (!is.null(input[[paste0("type_", var)]]) && input[[paste0("type_", var)]] == "Categorical") {
+        choices <- tryCatch({
+          levels(as.factor(myData()[[var]]))
+        }, error = function(e) {
+          c("Error loading choices" = "")
+        })
+        updateSelectInput(inputId = paste0("value_", var, "_categorical"), choices = choices)
+      }
+    }
+  })
 
   observeEvent(ignoreInit = TRUE, list(
     input$modelType,
@@ -117,6 +162,49 @@ server <- function(input, output, session) {
       return()
     }
 
+    empty_vars <- character(0)
+    pred_data <- list()
+
+    for (var in input$selectCovs) {
+      var_type <- input[[paste0("type_", var)]]
+      if (!is.null(var_type)) {
+        if (var_type == "Continuous") {
+          value <- input[[paste0("value_", var, "_continuous")]]
+        } else {
+          value <- input[[paste0("value_", var, "_categorical")]]
+        }
+
+        if (is.null(value) || value == "") {
+          empty_vars <- c(empty_vars, var)
+        } else {
+          if (var_type == "Continuous") {
+            pred_data[[var]] <- as.numeric(value)
+          } else {
+            pred_data[[var]] <- as.factor(value)
+          }
+        }
+        # 在这里可以处理输入值的变化，例如更新其他反应式值或执行计算
+        cat("Variable:", var, "Type:", var_type, "Value:", value, "\n")
+      }
+    }
+
+    # 如果有空值，显示错误消息
+    if (length(empty_vars) > 0) {
+      formatted_vars <- paste0("$", empty_vars)
+
+      showModal(modalDialog(
+        title = "Error",
+        HTML(paste0("The following variables have empty values:<br>",
+                    paste(formatted_vars, collapse = "<br>"),
+                    "<br><br>Please enter values for all selected variables.")),
+        easyClose = TRUE,
+        footer = NULL
+      ))
+      return()
+    }
+
+    pred_data_df <- as.data.frame(pred_data)
+
     # Construct the formula
     covars <- lapply(input$selectCovs, function(var) {
       var_type <- input[[paste0("type_", var)]]
@@ -132,11 +220,11 @@ server <- function(input, output, session) {
     cat("Generated formula: ", deparse(addCovar), "\n")
     
     # TODO: continue the work from here
-    get_der_results_withCovars(df, input, output, addCovar)
+    get_der_results_withCovars(df, input, output, addCovar, pred_data_df)
     
   })
 
-  observeEvent(input$run_bootstrap, {
+  observeEvent(input$run_bootstrap_dr, {
     if (is.null(myData())) {
       showModal(modalDialog(
         title = "Error",
@@ -148,10 +236,22 @@ server <- function(input, output, session) {
     }
 
     df <- myData()
-    if (input$modelType == 'DER') {
-      get_der_bootstrap(df, input, output)
-    } else {
-      get_dr_bootstrap(df, input, output)
+    get_dr_bootstrap(df, input, output)
+  })
+
+  observeEvent(input$run_bootstrap_der, {
+    if (is.null(myData())) {
+      showModal(modalDialog(
+        title = "Error",
+        "No data uploaded. Please upload a file first.",
+        easyClose = TRUE,
+        footer = NULL
+      ))
+      return()
     }
+
+    df <- myData()
+    get_der_bootstrap(df, input, output)
+    
   })
 }

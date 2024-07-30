@@ -187,7 +187,7 @@ body <- dashboardBody(
     tabItem(tabName = "realData",
       fluidRow(
         tabBox(
-          title = "Add Title Here", width = 12, height = 800,
+          title = "", width = 12, height = 800,
           tabPanel(
             "Description",
             # fluidRow(
@@ -200,16 +200,12 @@ body <- dashboardBody(
                 title = HTML("<b>Summary Statistics</b>"),
                 solidHeader = TRUE, width = 10,
                 verbatimTextOutput("data_description")
-              )
-            # )
-          ),
-          tabPanel(
-            "View",
-            box(
-              title = HTML("<b>Source Data</b>"), # status = "primary", 
-              solidHeader = TRUE, width = 6, # height = 600,
-              withSpinner(DTOutput("exposure_table_real"))
-            )
+              ),
+              box(
+                title = HTML("<b>Source Data</b>"), # status = "primary", 
+                solidHeader = TRUE, width = 10, # height = 600,
+                withSpinner(DTOutput("exposure_table_real"))
+              ),
           ),
           tabPanel(
             "Visualization", "Add Model content here.",
@@ -235,179 +231,301 @@ body <- dashboardBody(
             # ! -------------------------------------------------------
             conditionalPanel(
               condition = "input.modelType == 'DR'",
-              box(
-                title = "DR Model: Fitted Curve", status = "info", 
-                solidHeader = TRUE, width = 6, height = "475px",
-                withSpinner(plotOutput("DR_plot")),
-              ),
-              box(
-                title = "DR Model: Summary", status = "info", 
-                solidHeader = TRUE, width = 6, height = "475px",
-                verbatimTextOutput("DR_summary")
-              ),
-              # ! ----------------------
-              # ! Continuous Response
-              # ! ----------------------
-              conditionalPanel(
-                condition = "input.responseType == 'Continuous'",
-                box(
-                  title = "DR Model: Q-Q Plot of Residuals", status = "info", 
-                  solidHeader = TRUE, width = 6, height = "475px",
-                  withSpinner(plotOutput("DR_qqplot")),
-                  "Add Box content here.", br(), "More content here."
+              tabsetPanel(
+                tabPanel(
+                  "DR Model",
+                  box(
+                    title = "DR Model: Fitted Curve", status = "info", 
+                    solidHeader = TRUE, width = 6, height = "475px",
+                    withSpinner(plotOutput("DR_plot")),
+                  ),
+                  box(
+                    title = "DR Model: Summary", status = "info", 
+                    solidHeader = TRUE, width = 6, height = "475px",
+                    verbatimTextOutput("DR_summary")
+                  ),
+                  # ! ----------------------
+                  # ! Continuous Response
+                  # ! ----------------------
+                  conditionalPanel(
+                    condition = "input.responseType == 'Continuous'",
+                    box(
+                      title = "DR Model: Q-Q Plot of Residuals", status = "info", 
+                      solidHeader = TRUE, width = 6, height = "475px",
+                      withSpinner(plotOutput("DR_qqplot")),
+                      "Add Box content here.", br(), "More content here."
+                    ),
+                    box(
+                      title = "DR Model: Residuals vs Fitted Values Plot", status = "info", 
+                      solidHeader = TRUE, width = 6, height = "475px",
+                      withSpinner(plotOutput("DR_ResFitplot")),
+                      "Add Box content here.", br(), "More content here."
+                    ),
+                  ),
+                  # ! ----------------------
+                  # ! Binary Response
+                  # ! ----------------------
+                  conditionalPanel(
+                    condition = "input.responseType == 'Binary'",
+                    box(
+                      title = "DR Model: ROC Curve", status = "info", 
+                      solidHeader = TRUE, width = 6, # height = "520px",
+                      withSpinner(plotOutput("DR_ROCplot")),
+                      textOutput("DR_AUC_text"),
+                    ),
+                  ),
                 ),
-                box(
-                  title = "DR Model: Residuals vs Fitted Values Plot", status = "info", 
-                  solidHeader = TRUE, width = 6, height = "475px",
-                  withSpinner(plotOutput("DR_ResFitplot")),
-                  "Add Box content here.", br(), "More content here."
-                ),
-              ),
-              # ! ----------------------
-              # ! Binary Response
-              # ! ----------------------
-              conditionalPanel(
-                condition = "input.responseType == 'Binary'",
-                box(
-                  title = "DR Model: ROC Curve", status = "info", 
-                  solidHeader = TRUE, width = 6, # height = "520px",
-                  withSpinner(plotOutput("DR_ROCplot")),
-                  textOutput("DR_AUC_text"),
+                tabPanel(  # TODO: add content here
+                  "DR bootstrap",
+                  box(
+                    title = NULL, solidHeader = TRUE,
+                    width = 6, height = "160px",
+                    sliderTextInput(
+                      inputId = "n_bootstrap_dr",
+                      label = "Bootstrap Replicates:", 
+                      choices = c(100, 500, 1000, 5000, 10000),
+                      grid = TRUE
+                    ),
+                    prettyRadioButtons(
+                      inputId = "sampling_method_dr",
+                      label = "Resamling Method:", 
+                      choices = list("Full" = "total", "By Dose" = "by_dose"),
+                      inline = TRUE, 
+                      fill = TRUE
+                    )
+                  ),
+                  box(
+                    width = 4, height = "160px",
+                    solidHeader = TRUE,
+                    sliderTextInput(
+                      inputId = "conf_lvl1_dr",
+                      label = "Confidence Level:", 
+                      choices = c(0.10, 0.25, 0.50, 0.75, 0.80, 0.90, 0.95),
+                      selected = 0.95,
+                      grid = TRUE
+                    ),
+                    actionButton("run_bootstrap_dr", "Run Bootstrap", icon = icon("play"), style = 'width: 88%;')
+                  ),
+                  box(
+                    title = "DR Model: Fitted Curve", status = "warning", 
+                    solidHeader = TRUE, width = 10,
+                    withSpinner(plotOutput("DR_bootstrapPlot")),
+                  )
                 ),
               )
             ),
+
             # ! -------------------------------------------------------
             # ! Dose-Exposure-Response Model
             # ! -------------------------------------------------------
             conditionalPanel(
               condition = "input.modelType == 'DER'",
-              box(
-                title = NULL, solidHeader = TRUE,
-                width = 10, # height = "150px",
-                uiOutput("select_covs"),
-                uiOutput("select_covs_type"),
-                div(
-                  style = "display: flex; justify-content: right;",
-                  actionButton("run_analysis", "Run model again", icon = icon("play"), style = 'width: 50%;'),
-                )
-              ),
-              box(
-                title = "DER Model: Fitted Curve without Covariates", 
-                # status = "primary", 
-                solidHeader = TRUE, 
-                width = 8, height = "475px",
-                withSpinner(plotOutput("DER_plot")),
-              ),
-              fluidRow(
-                box(
-                  title = "ER Model: Summary", status = "primary", 
-                  solidHeader = TRUE, width = 6, # height = "475px",
-                  verbatimTextOutput("ER_summary")
-                ),
-                box(
-                  title = "DE Model: Summary", status = "success", 
-                  solidHeader = TRUE, width = 6, # height = "475px",
-                  verbatimTextOutput("DE_summary")
-                ),
-              ),
-              fluidRow(
-                box(
-                  title = "ER Model: Fitted Curve with Data Points", status = "primary",
-                  solidHeader = TRUE, width = 6, height = "475px",
-                  withSpinner(plotOutput("ER_plot")),
-                ),
-                box(
-                  title = "DE Model: Fitted Curve with Data Points", status = "success",
-                  solidHeader = TRUE, width = 6, height = "475px",
-                  withSpinner(plotOutput("DE_plot"))
-                ),
-              ),
-              # ! ----------------------
-              # ! Continuous Response
-              # ! ----------------------
-              conditionalPanel(
-                condition = "input.responseType == 'Continuous'",
-                fluidRow(
-                  box(
-                    title = "ER Model: Q-Q Plot of Residuals", 
-                    status = "primary", 
-                    solidHeader = TRUE, width = 6, height = "475px",
-                    withSpinner(plotOutput("ER_qqplot")),
-                    "Add Box content here.", br(), "More content here."
+              tabsetPanel(
+                tabPanel(
+                  "ER Model",
+                  fluidRow(
+                    box(
+                      title = "ER Model: Fitted Curve with Data Points", status = "primary",
+                      solidHeader = TRUE, width = 6, height = "475px",
+                      withSpinner(plotOutput("ER_plot")),
                     ),
+                    box(
+                      title = "ER Model: Summary", status = "primary", 
+                      solidHeader = TRUE, width = 6, # height = "475px",
+                      verbatimTextOutput("ER_summary")
+                    ),
+                  ),
+                  # ! ----------------------
+                  # ! Continuous Response
+                  # ! ----------------------
+                  conditionalPanel(
+                    condition = "input.responseType == 'Continuous'",
+                    fluidRow(
+                      box(
+                        title = "ER Model: Q-Q Plot of Residuals", 
+                        status = "primary", 
+                        solidHeader = TRUE, width = 6, height = "475px",
+                        withSpinner(plotOutput("ER_qqplot")),
+                        "Add Box content here.", br(), "More content here."
+                        ),
+                      box(
+                        title = "ER Model: Residuals vs Fitted Values Plot", 
+                        status = "primary", 
+                        solidHeader = TRUE, width = 6, height = "475px",
+                        withSpinner(plotOutput("ER_ResFitplot")),
+                        "Add Box content here.", br(), "More content here."
+                        ),
+                      ),
+                    ),
+                  # ! ----------------------
+                  # ! Binary Response
+                  # ! ----------------------
+                  conditionalPanel(
+                    condition = "input.responseType == 'Binary'",
+                    fluidRow(
+                      box(
+                        title = "ER Model: ROC Curve", status = "primary", 
+                        solidHeader = TRUE, width = 6, # height = "520px",
+                        withSpinner(plotOutput("ER_ROCplot")),
+                        textOutput("ER_AUC_text"),
+                        ),
+                    )
+                  ),
+                ),
+                tabPanel(
+                  "DE Model",  # TODO: add model diagnostics here
                   box(
-                    title = "ER Model: Residuals vs Fitted Values Plot", 
-                    status = "primary", 
-                    solidHeader = TRUE, width = 6, height = "475px",
-                    withSpinner(plotOutput("ER_ResFitplot")),
-                    "Add Box content here.", br(), "More content here."
+                    title = NULL, solidHeader = TRUE,
+                    width = 10, # height = "150px",
+                    uiOutput("select_covs"),
+                    uiOutput("select_covs_type"),
+                    div(
+                      style = "display: flex; justify-content: right;",
+                      actionButton("run_analysis", "Run model again", icon = icon("play"), style = 'width: 50%;'),
+                    )
+                  ),
+                  fluidRow(
+                    box(
+                      title = "DE Model: Fitted Curve with Data Points", status = "success",
+                      solidHeader = TRUE, width = 6, # height = "475px",
+                      withSpinner(plotOutput("DE_plot"))
+                    ),
+                    box(
+                      title = "DE Model: Summary", status = "success", 
+                      solidHeader = TRUE, width = 6, # height = "475px",
+                      verbatimTextOutput("DE_summary")
+                    ),
+                  ),
+                  fluidRow(
+                    box(
+                      title = "DE Model: Q-Q Plot of Residuals", status = "success", 
+                      solidHeader = TRUE, width = 6, # height = "475px",
+                      withSpinner(plotOutput("DE_qqplot")),
+                    ),
+                    box(
+                      title = "DE Model: Residuals vs Fitted Values Plot", status = "success", 
+                      solidHeader = TRUE, width = 6, # height = "475px",
+                      withSpinner(plotOutput("DE_ResFitplot")),
                     ),
                   ),
                 ),
-              # ! ----------------------
-              # ! Binary Response
-              # ! ----------------------
-              conditionalPanel(
-                condition = "input.responseType == 'Binary'",
-                fluidRow(
-                  box(
-                    title = "ER Model: ROC Curve", status = "primary", 
-                    solidHeader = TRUE, width = 6, # height = "520px",
-                    withSpinner(plotOutput("ER_ROCplot")),
-                    textOutput("ER_AUC_text"),
+                tabPanel(   # TODO: add content here
+                  "DER bootstrap",
+                  fluidRow(
+                    box(
+                      title = "DER Model: Fitted Curve with Data Points", status = "primary",
+                      solidHeader = TRUE, width = 10, # height = "475px",
+                      withSpinner(plotOutput("DER_plot")),
                     ),
-                )
-              ),
+                  ),
+                  box(
+                    title = NULL, solidHeader = TRUE,
+                    width = 6, height = "160px",
+                    sliderTextInput(
+                      inputId = "n_bootstrap_der",
+                      label = "Bootstrap Replicates:", 
+                      choices = c(100, 500, 1000, 5000, 10000),
+                      grid = TRUE
+                    ),
+                    prettyRadioButtons(
+                      inputId = "sampling_method_der",
+                      label = "Resamling Method:", 
+                      choices = list("Full" = "total", "By Dose" = "by_dose"),
+                      inline = TRUE, 
+                      fill = TRUE
+                    )
+                  ),
+                  box(
+                    width = 4, height = "160px",
+                    solidHeader = TRUE,
+                    sliderTextInput(
+                      inputId = "conf_lvl1_der",
+                      label = "Confidence Level:", 
+                      choices = c(0.10, 0.25, 0.50, 0.75, 0.80, 0.90, 0.95),
+                      selected = 0.95,
+                      grid = TRUE
+                    ),
+                    actionButton("run_bootstrap_der", "Run Bootstrap", icon = icon("play"), style = 'width: 88%;')
+                  ),
+                  box(
+                    title = "DER Model: Fitted Curve", status = "warning", 
+                    solidHeader = TRUE, width = 10,
+                    withSpinner(plotOutput("DER_bootstrapPlot")),
+                  ),
+                ),
+              )
             ),
+
+
+            # conditionalPanel(
+            #   condition = "input.modelType == 'DER'",
+            #   box(
+            #     title = NULL, solidHeader = TRUE,
+            #     width = 10, # height = "150px",
+            #     uiOutput("select_covs"),
+            #     uiOutput("select_covs_type"),
+            #     div(
+            #       style = "display: flex; justify-content: right;",
+            #       actionButton("run_analysis", "Run model again", icon = icon("play"), style = 'width: 50%;'),
+            #     )
+            #   ),
+            #   box(
+            #     title = "DER Model: Fitted Curve without Covariates", 
+            #     # status = "primary", 
+            #     solidHeader = TRUE, 
+            #     width = 8, height = "475px",
+            #     withSpinner(plotOutput("DER_plot")),
+            #   ),
+            # ),
           ),
-          tabPanel(
-            "Bootstrap",
-            box(
-              title = NULL, solidHeader = TRUE,
-              width = 6, height = "160px",
-              sliderTextInput(
-                inputId = "n_bootstrap",
-                label = "Bootstrap Replicates:", 
-                choices = c(100, 500, 1000, 5000, 10000),
-                grid = TRUE
-              ),
-              prettyRadioButtons(
-                inputId = "sampling_method",
-                label = "Resamling Method:", 
-                choices = list("Full" = "total", "By Dose" = "by_dose"),
-                inline = TRUE, 
-                fill = TRUE
-              )
-            ),
-            box(
-              width = 4, height = "160px",
-              solidHeader = TRUE,
-              sliderTextInput(
-                inputId = "conf_lvl1",
-                label = "Confidence Level:", 
-                choices = c(0.10, 0.25, 0.50, 0.75, 0.80, 0.90, 0.95),
-                selected = 0.95,
-                grid = TRUE
-              ),
-              actionButton("run_bootstrap", "Run Bootstrap", icon = icon("play"), style = 'width: 88%;')
-            ),
-            conditionalPanel(
-              condition = "input.modelType == 'DER'",
-              box(
-                title = "DER Model: Fitted Curve", status = "warning", 
-                solidHeader = TRUE, width = 10,
-                withSpinner(plotOutput("DER_bootstrapPlot")),
-              )
-            ),
-            conditionalPanel(
-              condition = "input.modelType == 'DR'",
-              box(
-                title = "DR Model: Fitted Curve", status = "warning", 
-                solidHeader = TRUE, width = 10,
-                withSpinner(plotOutput("DR_bootstrapPlot")),
-              )
-            ),
-          ),
+          # tabPanel(
+          #   "Bootstrap",
+          #   box(
+          #     title = NULL, solidHeader = TRUE,
+          #     width = 6, height = "160px",
+          #     sliderTextInput(
+          #       inputId = "n_bootstrap",
+          #       label = "Bootstrap Replicates:", 
+          #       choices = c(100, 500, 1000, 5000, 10000),
+          #       grid = TRUE
+          #     ),
+          #     prettyRadioButtons(
+          #       inputId = "sampling_method",
+          #       label = "Resamling Method:", 
+          #       choices = list("Full" = "total", "By Dose" = "by_dose"),
+          #       inline = TRUE, 
+          #       fill = TRUE
+          #     )
+          #   ),
+          #   box(
+          #     width = 4, height = "160px",
+          #     solidHeader = TRUE,
+          #     sliderTextInput(
+          #       inputId = "conf_lvl1",
+          #       label = "Confidence Level:", 
+          #       choices = c(0.10, 0.25, 0.50, 0.75, 0.80, 0.90, 0.95),
+          #       selected = 0.95,
+          #       grid = TRUE
+          #     ),
+          #     actionButton("run_bootstrap", "Run Bootstrap", icon = icon("play"), style = 'width: 88%;')
+          #   ),
+          #   conditionalPanel(
+          #     condition = "input.modelType == 'DER'",
+          #     box(
+          #       title = "DER Model: Fitted Curve", status = "warning", 
+          #       solidHeader = TRUE, width = 10,
+          #       withSpinner(plotOutput("DER_bootstrapPlot")),
+          #     )
+          #   ),
+          #   conditionalPanel(
+          #     condition = "input.modelType == 'DR'",
+          #     box(
+          #       title = "DR Model: Fitted Curve", status = "warning", 
+          #       solidHeader = TRUE, width = 10,
+          #       withSpinner(plotOutput("DR_bootstrapPlot")),
+          #     )
+          #   ),
+          # ),
           tabPanel(
             "Documentation",
             includeMarkdown("doc.md")

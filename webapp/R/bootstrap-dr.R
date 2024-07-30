@@ -1,8 +1,10 @@
 get_dr_bootstrap <- function(df, input, output) {
-    n_bootstrap <- input$n_bootstrap
+    n_bootstrap <- input$n_bootstrap_dr
+    valid_dr <- complete.cases(df$Dose, df$Response)
+    df_valid <- df[valid_dr, ]
     type <- ifelse(input$responseType == "Continuous", "gaussian", "binomial")
-    fit_dr <- fitERMod(df$Dose, df$Response, model = input$dr_model, type = type)
-    new_doses <- seq(min(df$Dose), max(df$Dose), by = 2)
+    fit_dr <- fitERMod(df_valid$Dose, df_valid$Response, model = input$dr_model, type = type)
+    new_doses <- seq(min(df_valid$Dose), max(df_valid$Dose), by = 2)
     fitted_values <- predict(fit_dr, newdata = new_doses, type = "response")
 
     if (input$responseType == "Continuous") {
@@ -11,14 +13,13 @@ get_dr_bootstrap <- function(df, input, output) {
         fit_df2 <- data.frame(Dose = new_doses, Fitted = inv_logit(fitted_values))
     }
 
-    log_info("Bootstrap started with sampling method:", input$sampling_method)
+    log_info("Bootstrap started with sampling method:", input$sampling_method_dr)
     fitted_vals_bootstrap <- matrix(NA, nrow = n_bootstrap, ncol = length(new_doses))
 
     withProgress(message = "Run Bootstrap replicates", value = 0, {
         for (jj in 1:n_bootstrap) {
-            # ind <- sample(1:nrow(df), nrow(df), replace = TRUE)
-            ind <- bootstrap_indices(df, method = input$sampling_method)
-            fit_dr0 <- fitERMod(df$Dose[ind], df$Response[ind], model = input$dr_model, type = type)
+            ind <- bootstrap_indices(df_valid, method = input$sampling_method)
+            fit_dr0 <- fitERMod(df_valid$Dose[ind], df_valid$Response[ind], model = input$dr_model, type = type)
             if (input$responseType == "Continuous") {
                 fitted_vals_bootstrap[jj, ] <- predict(fit_dr0, newdata = new_doses, type = "response")
             } else {
@@ -34,7 +35,7 @@ get_dr_bootstrap <- function(df, input, output) {
     log_info("Bootstrap finished...")
     log_info("Valid bootstrap samples:", nrow(fitted_vals_bootstrap))
 
-    q_lower <- (1 - input$conf_lvl1) / 2
+    q_lower <- (1 - input$conf_lvl1_dr) / 2
     ci_low <- apply(fitted_vals_bootstrap, 2, function(x) quantile(x, q_lower))
     ci_high <- apply(fitted_vals_bootstrap, 2, function(x) quantile(x, 1 - q_lower))
 
@@ -43,7 +44,7 @@ get_dr_bootstrap <- function(df, input, output) {
     fit_df2$CI_high <- ci_high
 
     if (input$responseType == "Continuous") {
-        df_summary <- df %>%
+        df_summary <- df_valid %>%
             group_by(Dose) %>%
             summarise(
                 n = n(),
@@ -56,7 +57,7 @@ get_dr_bootstrap <- function(df, input, output) {
 
         p_dr0 <- ggplot() +
             geom_errorbar(data = df_summary, aes(x = Dose, ymin = ci_low, ymax = ci_high), width = 0.2) +  # Error bars
-            geom_point(data = df, aes(x = Dose, y = log(Response)), color = "orange", alpha = 0.5) +  # 数据点
+            geom_point(data = df_valid, aes(x = Dose, y = log(Response)), color = "orange", alpha = 0.5) +  # 数据点
             geom_point(data = df_summary, aes(x = Dose, y = mean_log_response), color = "black", size = 2) +  # 数据点
             geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线
             geom_ribbon(data = fit_df2, aes(x = Dose, ymin = CI_low, ymax = CI_high), alpha = 0.2, fill = "grey") +  # 置信区间
@@ -66,7 +67,7 @@ get_dr_bootstrap <- function(df, input, output) {
             ) +
             theme_minimal()
     } else {
-        df_summary <- df %>%
+        df_summary <- df_valid %>%
         group_by(Dose) %>%
         summarise(
             n = n(),
@@ -77,7 +78,7 @@ get_dr_bootstrap <- function(df, input, output) {
         )
 
         p_dr0 <- ggplot() +
-            geom_jitter(data = df, aes(x = Dose, y = Response), color = "blue", alpha = 0.5, width = 0, height = 0.05) + 
+            geom_jitter(data = df_valid, aes(x = Dose, y = Response), color = "blue", alpha = 0.5, width = 0, height = 0.05) + 
             geom_point(data = df_summary, aes(x = Dose, y = prob), color = "black", size = 2) +  # 数据点
             geom_errorbar(data = df_summary, aes(x = Dose, ymin = ci_low, ymax = ci_high), width = 0.2) +  # Error bars
             geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线

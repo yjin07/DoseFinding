@@ -62,7 +62,14 @@ predict.DERMod <- function(object, newdata, n = 1e4, type = "response") {
     fit2 <- object$fit2   # * lm object
 
     # 确保 newdata 是一个数据框
-    newdata <- data.frame(dose = newdata)
+    if (!is.data.frame(newdata)) {
+        newdata <- data.frame(dose = newdata)
+    } else {
+        if (!"dose" %in% names(newdata)) {
+            stop("newdata must contain a 'dose' column.")
+        }
+    }
+    
 
     # 初始化响应值的向量
     resp <- numeric(nrow(newdata))

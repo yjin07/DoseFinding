@@ -5,7 +5,7 @@ source(here("R/utils", "ermodels.R"))
 source(here("R/utils", "Mods.R"))
 
 # General function to fit an exposure-response model
-fitERMod <- function(exposure, resp, model = NULL, type = c("gaussian", "binomial"), addArgs = NULL) {
+fitERMod <- function(exposure, resp, model = NULL, type = c("gaussian", "binomial"), predictor = "Exposure", addArgs = NULL) {
     data <- data.frame(exposure = exposure, resp = resp)
 
     if (!model %in% names(model_info)) {
@@ -86,7 +86,7 @@ fitERMod <- function(exposure, resp, model = NULL, type = c("gaussian", "binomia
     }
 
     fit_list$AIC <- -2 * fit_list$logLike + 2 * length(fit_list$coeffs)
-
+    fit_list$predictor <- predictor
     
     class(fit_list) <- "ERMod"
     return(fit_list)
@@ -99,9 +99,9 @@ fitERMod <- function(exposure, resp, model = NULL, type = c("gaussian", "binomia
 summary.ERMod <- function(object) {
     cat("\nCall:\n")
     if (object$type == "binomial") {
-        cat("Model         : logit(P(Reponse = 1)) ~ g(Exposure)\n")
+        cat(paste0("Model         : logit(P(Reponse = 1)) ~ g(", object$predictor, ")\n"))
     } else {
-        cat("Model         : log(Reponse) ~ g(Exposure)\n")
+        cat(paste0("Model         : log(Reponse) ~ g(", object$predictor, ")\n"))
     }
     cat("Link func g   :", object$model, "\n")
     cat("Response Type :", object$type, "\n\n")

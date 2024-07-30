@@ -188,19 +188,20 @@ generate_plots_cont <- function(der_data, der_data_all, er_summary, n_quantile) 
 generate_and_render_real_data <- function(output, data = NULL, input = NULL) {
   if (is.null(data)) {
     set.seed(1000)
-    der_data <- generate_data_real()    # Generate data with Binary response by default
+    der_data1 <- generate_data_real()    # Generate data with Binary response by default
   } else {
-    der_data <- na.omit(data)   # Remove NA values
-
+    der_data1 <- data   # Remove NA values
   }
   
   output$exposure_table_real <- renderDT({
-    datatable(der_data)
+    datatable(der_data1)
   })
 
   output$data_preview <- renderTable({
-    head(der_data, 10)
+    head(der_data1, 10)
   })
+
+  der_data <- na.omit(der_data1)
 
   output$data_description <- renderPrint({
     der_data1 <- der_data
