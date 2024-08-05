@@ -286,13 +286,24 @@ body <- dashboardBody(
                       choices = c(100, 500, 1000, 5000, 10000),
                       grid = TRUE
                     ),
-                    prettyRadioButtons(
-                      inputId = "sampling_method_dr",
-                      label = "Resamling Method:", 
-                      choices = list("Full" = "total", "By Dose" = "by_dose"),
-                      inline = TRUE, 
-                      fill = TRUE
-                    )
+                    div(
+                      style = "display: flex; align-items: center;",
+                      prettyRadioButtons(
+                        inputId = "sampling_method_dr",
+                        label = "Resamling Method:", 
+                        choices = list("Full" = "total", "By Dose" = "by_dose"),
+                        inline = TRUE, 
+                        fill = TRUE
+                      ),
+                      tags$i(
+                        class = "fa fa-info-circle",
+                        style = "margin-left: 10px; cursor: pointer;",
+                        title = "Full: resample all data points.<br>By Dose: resample by dose level.",
+                        'data-toggle' = "tooltip",
+                        'data-placement' = "right",
+                        'data-html' = "true"
+                      )
+                    ),
                   ),
                   box(
                     width = 4, height = "160px",
@@ -305,6 +316,19 @@ body <- dashboardBody(
                       grid = TRUE
                     ),
                     actionButton("run_bootstrap_dr", "Run Bootstrap", icon = icon("play"), style = 'width: 88%;')
+                  ),
+                  fluidRow(
+                    box(
+                      solidHeader = TRUE, width = 4,
+                      textInput("doi_dr", label = "Dose of Interest:", width = '50%'),
+                    ),
+                    conditionalPanel(
+                      condition = "input.doi_dr != ''",
+                      box(
+                        solidHeader = TRUE, width = 6,
+                        verbatimTextOutput("doi_res_dr"),
+                      ),
+                    )
                   ),
                   box(
                     title = "DR Model: Fitted Curve", status = "warning", 
@@ -409,43 +433,80 @@ body <- dashboardBody(
                     ),
                   ),
                 ),
-                tabPanel(   # TODO: add content here
-                  "DER bootstrap",
+                tabPanel(
+                  "DER",
                   fluidRow(
                     box(
-                      title = "DER Model: Fitted Curve with Data Points", status = "primary",
-                      solidHeader = TRUE, width = 10, # height = "475px",
+                      title = "DER Model: Fitted Curve with Data Points", 
+                      # status = "primary", 
+                      solidHeader = TRUE, 
+                      width = 10, 
                       withSpinner(plotOutput("DER_plot")),
                     ),
                   ),
+                ),
+                tabPanel(
+                  "Bootstrap",
                   box(
                     title = NULL, solidHeader = TRUE,
-                    width = 6, height = "160px",
-                    sliderTextInput(
-                      inputId = "n_bootstrap_der",
-                      label = "Bootstrap Replicates:", 
-                      choices = c(100, 500, 1000, 5000, 10000),
-                      grid = TRUE
-                    ),
-                    prettyRadioButtons(
-                      inputId = "sampling_method_der",
-                      label = "Resamling Method:", 
-                      choices = list("Full" = "total", "By Dose" = "by_dose"),
-                      inline = TRUE, 
-                      fill = TRUE
-                    )
+                    width = 10, # height = "150px",
+                    uiOutput("select_covs_bootstrap"),
+                    uiOutput("select_covs_type_bootstrap"),
                   ),
-                  box(
-                    width = 4, height = "160px",
-                    solidHeader = TRUE,
-                    sliderTextInput(
-                      inputId = "conf_lvl1_der",
-                      label = "Confidence Level:", 
-                      choices = c(0.10, 0.25, 0.50, 0.75, 0.80, 0.90, 0.95),
-                      selected = 0.95,
-                      grid = TRUE
+                  fluidRow(
+                    box(
+                      title = NULL, solidHeader = TRUE,
+                      width = 6, height = "200px",
+                      sliderTextInput(
+                        inputId = "n_bootstrap_der",
+                        label = "Bootstrap Replicates:", 
+                        choices = c(100, 500, 1000, 5000, 10000),
+                        grid = TRUE
+                      ),
+                      div(
+                        style = "display: flex; align-items: center;",
+                        prettyRadioButtons(
+                          inputId = "sampling_method_der",
+                          label = "Resampling Method:", 
+                          choices = list("Full" = "total", "By Dose" = "by_dose"),
+                          inline = TRUE, 
+                          fill = TRUE
+                        ),
+                        tags$i(
+                          class = "fa fa-info-circle",
+                          style = "margin-left: 10px; cursor: pointer;",
+                          title = "Full: resample all data points.<br>By Dose: resample by dose level.",
+                          'data-toggle' = "tooltip",
+                          'data-placement' = "right",
+                          'data-html' = "true"
+                        )
+                      ),
                     ),
-                    actionButton("run_bootstrap_der", "Run Bootstrap", icon = icon("play"), style = 'width: 88%;')
+                    box(
+                      width = 4, height = "160px",
+                      solidHeader = TRUE,
+                      sliderTextInput(
+                        inputId = "conf_lvl1_der",
+                        label = "Confidence Level:", 
+                        choices = c(0.10, 0.25, 0.50, 0.75, 0.80, 0.90, 0.95),
+                        selected = 0.95,
+                        grid = TRUE
+                      ),
+                      actionButton("run_bootstrap_der", "Run Bootstrap", icon = icon("play"), style = 'width: 88%;')
+                    ),
+                  ),
+                  fluidRow(
+                    box(
+                      solidHeader = TRUE, width = 4,
+                      textInput("doi_der", label = "Dose of Interest:", width = '50%'),
+                    ),
+                    conditionalPanel(
+                      condition = "input.doi_der != ''",
+                      box(
+                        solidHeader = TRUE, width = 6,
+                        verbatimTextOutput("doi_res"),
+                      ),
+                    )
                   ),
                   box(
                     title = "DER Model: Fitted Curve", status = "warning", 
@@ -455,77 +516,7 @@ body <- dashboardBody(
                 ),
               )
             ),
-
-
-            # conditionalPanel(
-            #   condition = "input.modelType == 'DER'",
-            #   box(
-            #     title = NULL, solidHeader = TRUE,
-            #     width = 10, # height = "150px",
-            #     uiOutput("select_covs"),
-            #     uiOutput("select_covs_type"),
-            #     div(
-            #       style = "display: flex; justify-content: right;",
-            #       actionButton("run_analysis", "Run model again", icon = icon("play"), style = 'width: 50%;'),
-            #     )
-            #   ),
-            #   box(
-            #     title = "DER Model: Fitted Curve without Covariates", 
-            #     # status = "primary", 
-            #     solidHeader = TRUE, 
-            #     width = 8, height = "475px",
-            #     withSpinner(plotOutput("DER_plot")),
-            #   ),
-            # ),
           ),
-          # tabPanel(
-          #   "Bootstrap",
-          #   box(
-          #     title = NULL, solidHeader = TRUE,
-          #     width = 6, height = "160px",
-          #     sliderTextInput(
-          #       inputId = "n_bootstrap",
-          #       label = "Bootstrap Replicates:", 
-          #       choices = c(100, 500, 1000, 5000, 10000),
-          #       grid = TRUE
-          #     ),
-          #     prettyRadioButtons(
-          #       inputId = "sampling_method",
-          #       label = "Resamling Method:", 
-          #       choices = list("Full" = "total", "By Dose" = "by_dose"),
-          #       inline = TRUE, 
-          #       fill = TRUE
-          #     )
-          #   ),
-          #   box(
-          #     width = 4, height = "160px",
-          #     solidHeader = TRUE,
-          #     sliderTextInput(
-          #       inputId = "conf_lvl1",
-          #       label = "Confidence Level:", 
-          #       choices = c(0.10, 0.25, 0.50, 0.75, 0.80, 0.90, 0.95),
-          #       selected = 0.95,
-          #       grid = TRUE
-          #     ),
-          #     actionButton("run_bootstrap", "Run Bootstrap", icon = icon("play"), style = 'width: 88%;')
-          #   ),
-          #   conditionalPanel(
-          #     condition = "input.modelType == 'DER'",
-          #     box(
-          #       title = "DER Model: Fitted Curve", status = "warning", 
-          #       solidHeader = TRUE, width = 10,
-          #       withSpinner(plotOutput("DER_bootstrapPlot")),
-          #     )
-          #   ),
-          #   conditionalPanel(
-          #     condition = "input.modelType == 'DR'",
-          #     box(
-          #       title = "DR Model: Fitted Curve", status = "warning", 
-          #       solidHeader = TRUE, width = 10,
-          #       withSpinner(plotOutput("DR_bootstrapPlot")),
-          #     )
-          #   ),
-          # ),
           tabPanel(
             "Documentation",
             includeMarkdown("doc.md")

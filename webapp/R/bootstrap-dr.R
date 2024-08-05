@@ -5,6 +5,14 @@ get_dr_bootstrap <- function(df, input, output) {
     type <- ifelse(input$responseType == "Continuous", "gaussian", "binomial")
     fit_dr <- fitERMod(df_valid$Dose, df_valid$Response, model = input$dr_model, type = type)
     new_doses <- seq(min(df_valid$Dose), max(df_valid$Dose), by = 2)
+    
+    if (!input$doi_dr=="") {
+        doi <- as.numeric(input$doi_dr)
+        if (!doi %in% new_doses) {
+            new_doses <- sort(c(new_doses, doi))
+        }
+    }
+
     fitted_values <- predict(fit_dr, newdata = new_doses, type = "response")
 
     if (input$responseType == "Continuous") {
@@ -43,6 +51,18 @@ get_dr_bootstrap <- function(df, input, output) {
     fit_df2$CI_low <- ci_low
     fit_df2$CI_high <- ci_high
 
+
+    if (!input$doi_dr=="") {
+        doi_ind <- which(new_doses == doi)
+        doi_mean <- fit_df2$Fitted[doi_ind]
+        doi_ci_low <- fit_df2$CI_low[doi_ind]
+        doi_ci_high <- fit_df2$CI_high[doi_ind]
+        log_info("DOI:", doi, "Mean:", doi_mean, "CI_low:", doi_ci_low, "CI_high:", doi_ci_high)
+        output$doi_res_dr <- renderText({
+            paste("Selected dose level:", doi, "\nMean:", round(doi_mean, 2), "\nCI lower:", round(doi_ci_low, 2), "\nCI upper:", round(doi_ci_high, 2))
+        })
+    }
+
     if (input$responseType == "Continuous") {
         df_summary <- df_valid %>%
             group_by(Dose) %>%
@@ -78,9 +98,9 @@ get_dr_bootstrap <- function(df, input, output) {
         )
 
         p_dr0 <- ggplot() +
+            geom_errorbar(data = df_summary, aes(x = Dose, ymin = ci_low, ymax = ci_high), width = 0.2) +  # Error bars
             geom_jitter(data = df_valid, aes(x = Dose, y = Response), color = "blue", alpha = 0.5, width = 0, height = 0.05) + 
             geom_point(data = df_summary, aes(x = Dose, y = prob), color = "black", size = 2) +  # 数据点
-            geom_errorbar(data = df_summary, aes(x = Dose, ymin = ci_low, ymax = ci_high), width = 0.2) +  # Error bars
             geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线
             geom_ribbon(data = fit_df2, aes(x = Dose, ymin = CI_low, ymax = CI_high), alpha = 0.2, fill = "grey") + 
             labs(
