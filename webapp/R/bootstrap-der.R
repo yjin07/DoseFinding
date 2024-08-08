@@ -55,7 +55,7 @@ get_der_bootstrap <- function(df, input, output) {
         doi_mean <- fit_df2$Fitted[doi_ind]
         doi_ci_low <- fit_df2$CI_low[doi_ind]
         doi_ci_high <- fit_df2$CI_high[doi_ind]
-        log_info("DOI:", doi, "Mean:", doi_mean, "CI_low:", doi_ci_low, "CI_high:", doi_ci_high)
+        log_info("DOI:", doi, " Mean:", round(doi_mean, 5), " CI_low:", round(doi_ci_low, 5), " CI_high:", round(doi_ci_high, 5))
         output$doi_res <- renderText({
             paste("Selected dose level:", doi, "\nMean:", round(doi_mean, 2), "\nCI lower:", round(doi_ci_low, 2), "\nCI upper:", round(doi_ci_high, 2))
         })

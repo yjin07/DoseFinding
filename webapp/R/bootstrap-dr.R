@@ -57,7 +57,7 @@ get_dr_bootstrap <- function(df, input, output) {
         doi_mean <- fit_df2$Fitted[doi_ind]
         doi_ci_low <- fit_df2$CI_low[doi_ind]
         doi_ci_high <- fit_df2$CI_high[doi_ind]
-        log_info("DOI:", doi, "Mean:", doi_mean, "CI_low:", doi_ci_low, "CI_high:", doi_ci_high)
+        log_info("DOI:", doi, " Mean:", round(doi_mean, 5), " CI_low:", round(doi_ci_low, 5), " CI_high:", round(doi_ci_high, 5))
         output$doi_res_dr <- renderText({
             paste("Selected dose level:", doi, "\nMean:", round(doi_mean, 2), "\nCI lower:", round(doi_ci_low, 2), "\nCI upper:", round(doi_ci_high, 2))
         })
@@ -81,7 +81,7 @@ get_dr_bootstrap <- function(df, input, output) {
             geom_point(data = df_summary, aes(x = Dose, y = mean_log_response), color = "black", size = 2) +  # 数据点
             geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线
             geom_ribbon(data = fit_df2, aes(x = Dose, ymin = CI_low, ymax = CI_high), alpha = 0.2, fill = "grey") +  # 置信区间
-            labs(
+            labs(title = paste0("Reponse: ", type, "\nDR Model: ", input$dr_model, "\nNo Covariates"),
                 x = "Dose",
                 y = "log(Response)"
             ) +
@@ -103,7 +103,7 @@ get_dr_bootstrap <- function(df, input, output) {
             geom_point(data = df_summary, aes(x = Dose, y = prob), color = "black", size = 2) +  # 数据点
             geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线
             geom_ribbon(data = fit_df2, aes(x = Dose, ymin = CI_low, ymax = CI_high), alpha = 0.2, fill = "grey") + 
-            labs(
+            labs(title = paste0("Reponse: ", type, "\nDR Model: ", input$dr_model, "\nNo Covariates"),
                 x = "Dose",
                 y = "Probability of Response"
             ) +

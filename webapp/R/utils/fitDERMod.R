@@ -77,6 +77,8 @@ predict.DERMod <- function(object, newdata, n = 1e4, type = "response") {
     # 对每个 newdata 逐一处理
     for (i in 1:nrow(newdata)) {
         logC <- predict(fit2, newdata = newdata[i, , drop = FALSE])
+
+        # Monte Carlo simulation to approximate the conditional expectation
         logCs <- logC + object$sigma_c * rnorm(n)
         CCs <- exp(logCs)
 

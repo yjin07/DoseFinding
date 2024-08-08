@@ -19,6 +19,7 @@ server <- function(input, output, session) {
   #   generate_and_render_simulate_data(output)
   # })
 
+
   # ! ---------------------
   # ! Tab: real data
   # ! ---------------------
@@ -72,15 +73,15 @@ server <- function(input, output, session) {
   observeEvent(input$modelType, {
     output$dynamic_tabs <- renderUI({
     log_info("Render dynamic tabs...")
-    if (input$modelType == 'DER') {
-      tagList(
-        tabPanel("ER Model", value = "er", "ER Model Content"),
-        tabPanel("DE Model", value = "de", "DE Model Content"),
-      )
-    } else {
-      tabPanel("DR Model", value = "dr", "DR Model Content")
-    }
-  })
+      if (input$modelType == 'DER') {
+        tagList(
+          tabPanel("ER Model", value = "er", "ER Model Content"),
+          tabPanel("DE Model", value = "de", "DE Model Content"),
+        )
+      } else {
+        tabPanel("DR Model", value = "dr", "DR Model Content")
+      }
+    })
   })
 
 
@@ -483,4 +484,24 @@ server <- function(input, output, session) {
       get_der_bootstrap_withCovars(df, input, output, addCovar, pred_data_df)
     }
   })
+
+
+  # * ---------------------
+  # * Menu: TGI
+  # * ---------------------
+  myTGIData <- reactiveVal()
+
+  observeEvent(input$upload_tgi, {
+    log_info("User trying to upload data of TGI...")
+    myTGIData(NULL)
+    uploadCheckingTGI(input, myTGIData)
+  })
+
+  observeEvent(myTGIData(), {
+    df <- myTGIData()
+    log_info("Data of TGI is uploaded...")
+
+    get_tgi_results(df, input, output)
+  })
+
 }

@@ -64,7 +64,7 @@ get_der_results <- function(df, input, output) {
 
         output$ER_qqplot <- renderPlot({
             qqnorm(fit_er$residuals, 
-            main = paste0("Q-Q plot of residuals (ER: ", input$er_model, ")")
+                main = paste0("Q-Q plot of residuals (ER: ", input$er_model, ")")
             )
             qqline(fit_er$residuals)
         })
@@ -98,13 +98,13 @@ get_der_results <- function(df, input, output) {
 
         roc_obj <- roc(df$Response, fit_er$fitted_values, percent = TRUE, direction = "<")
 
-        output$ER_AUC_text <- renderText({
-            paste("AUC:", round(auc(roc_obj), 3))
-        })
+        # output$ER_AUC_text <- renderText({
+        #     paste("AUC:", round(auc(roc_obj), 3))
+        # })
 
         output$ER_ROCplot <- renderPlot({
             plot(roc_obj, 
-            main = paste0("ROC curve", " (ER: ", input$er_model, ")")
+                main = paste0("ROC curve", " (ER: ", input$er_model, ")\nAUC: ", round(auc(roc_obj), 3))
             )
         })
     }

@@ -59,92 +59,96 @@ siderbar <- dashboardSidebar(
     # div(style = "margin: 10px 5px; width: 500px",  # Adjust the top and bottom margin as needed
     #   actionButton("generate", "Generate", icon = icon("play"), style = 'width: 25%;')
     # ),
-    menuItem("Upload Data", tabName = "realData", icon = icon("th")),
-    p("Load data of type:", style = "margin: 10px 5px 0px;font-weight: bold;"),
-    div(
-      id = "sidebar_selection_container",
-      selectInput("data_type", label = NULL, 
-        choices = list("rds | rda | rdata" = "rdss", "csv" = "csv", "txt" = "txt"), 
-        selected = "rds | rda | rdata")
-    ),
-    div(
-      id = "upload_file_container",
-      fileInput(inputId = "file1", label = NULL,
-        accept = c(
-          "text/csv",
-          "text/comma-separated-values,text/plain",
-          ".csv"
-        )
-      ),
-    ),
-    p("Response Type:", style = "margin: 10px 5px 0px;font-weight: bold;"),
-    div(
-      id = "sidebar_selection_container",
-      radioGroupButtons(
-        inputId = "responseType",
-        label = NULL, 
-        choices = c("Continuous", "Binary"),
-        # checkIcon = list(yes = icon("ok"), no = icon("square")),
-        checkIcon = list(yes = icon("ok", lib = "glyphicon")),
-        # status = "info", 
-        justified = TRUE, direction = "horizontal",
-        width = '250px'
-      ),
-    ),
-    p("Model Selection:", style = "margin: 10px 5px 0px;font-weight: bold;"),
-    div(
-      id = "sidebar_selection_container",
-      radioGroupButtons(
-        inputId = "modelType",
-        label = NULL, 
-        choices = c("DR", "DER"),
-        checkIcon = list(yes = icon("ok", lib = "glyphicon")),
-        justified = TRUE, direction = "horizontal",
-        width = '250px'
-      ),
-    ),
-    conditionalPanel(
-      condition = "input.modelType == 'DR'",        
-      p("DR Model:", style = "margin: 10px 5px 0px;font-weight: bold;"),
+    menuItem(HTML("<strong>&nbsp;&nbsp;Dose Finding</strong>"), tabName = "doseFinding", icon = icon("th")),
+      p("Load data of type:", style = "margin: 10px 5px 0px;font-weight: bold;"),
       div(
         id = "sidebar_selection_container",
-        selectInput("dr_model", label = NULL, # choices = c()
-          choices = list("Sigmoid-Emax" = "sigEmax", "Emax" = "Emax", "Exponential" = "Expo", 
-                          "Beta" = "Beta", "Linear" = "Linear", "Linear-Log"="LinearLog",
-                          "Logistic" = "Logistic", "Quadratic" = "Quadratic"), 
-          selected = "Sigmoid-Emax"
-          )
+        selectInput("data_type", label = NULL, 
+          choices = list("rds | rda | rdata" = "rdss", "csv" = "csv", "txt" = "txt"), 
+          selected = "rds | rda | rdata")
       ),
-    ),
-    conditionalPanel(
-      condition = "input.modelType == 'DER'",
-      p("ER Model:", style = "margin: 10px 5px 0px;font-weight: bold;"),
+      div(
+        id = "upload_file_container",
+        fileInput(inputId = "file1", label = NULL,
+          accept = c(
+            "text/csv",
+            "text/comma-separated-values,text/plain",
+            ".csv"
+          )
+        ),
+      ),
+      p("Response Type:", style = "margin: 10px 5px 0px;font-weight: bold;"),
       div(
         id = "sidebar_selection_container",
-        selectInput("er_model", label = NULL, # choices = c()
-          choices = list("Sigmoid-Emax" = "sigEmax", "Emax" = "Emax", "Exponential" = "Expo", 
-                          "Beta" = "Beta", "Linear" = "Linear", "Linear-Log"="LinearLog",
-                          "Logistic" = "Logistic", "Quadratic" = "Quadratic"), 
-          selected = "Sigmoid-Emax"
-          )
+        radioGroupButtons(
+          inputId = "responseType",
+          label = NULL, 
+          choices = c("Continuous", "Binary"),
+          # checkIcon = list(yes = icon("ok"), no = icon("square")),
+          checkIcon = list(yes = icon("ok", lib = "glyphicon")),
+          # status = "info", 
+          justified = TRUE, direction = "horizontal",
+          width = '250px'
+        ),
       ),
-      p("DE Model:", style = "margin: 10px 5px 0px;font-weight: bold;"),
+      p("Model Selection:", style = "margin: 10px 5px 0px;font-weight: bold;"),
       div(
         id = "sidebar_selection_container",
-        selectInput("de_model", label = NULL, # choices = c()
-          choices = list("Power" = "power"), 
-          selected = "Power"
-          )
+        radioGroupButtons(
+          inputId = "modelType",
+          label = NULL, 
+          choices = c("DR", "DER"),
+          checkIcon = list(yes = icon("ok", lib = "glyphicon")),
+          justified = TRUE, direction = "horizontal",
+          width = '250px'
+        ),
       ),
-    ),
-    div(
-      id = "sidebar_selection_container",
-      actionButton("upload", "Upload & Run", icon = icon("play"), style = 'width: 88%; margin-top: 40px;')
-    )
+      conditionalPanel(
+        condition = "input.modelType == 'DR'",        
+        p("DR Model:", style = "margin: 10px 5px 0px;font-weight: bold;"),
+        div(
+          id = "sidebar_selection_container",
+          selectInput("dr_model", label = NULL, # choices = c()
+            choices = list("Sigmoid-Emax" = "sigEmax", "Emax" = "Emax", "Exponential" = "Expo", 
+                            "Beta" = "Beta", "Linear" = "Linear", "Linear-Log"="LinearLog",
+                            "Logistic" = "Logistic", "Quadratic" = "Quadratic"), 
+            selected = "Sigmoid-Emax"
+            )
+        ),
+      ),
+      conditionalPanel(
+        condition = "input.modelType == 'DER'",
+        p("ER Model:", style = "margin: 10px 5px 0px;font-weight: bold;"),
+        div(
+          id = "sidebar_selection_container",
+          selectInput("er_model", label = NULL, # choices = c()
+            choices = list("Sigmoid-Emax" = "sigEmax", "Emax" = "Emax", "Exponential" = "Expo", 
+                            "Beta" = "Beta", "Linear" = "Linear", "Linear-Log"="LinearLog",
+                            "Logistic" = "Logistic", "Quadratic" = "Quadratic"), 
+            selected = "Sigmoid-Emax"
+            )
+        ),
+        p("DE Model:", style = "margin: 10px 5px 0px;font-weight: bold;"),
+        div(
+          id = "sidebar_selection_container",
+          selectInput("de_model", label = NULL, # choices = c()
+            choices = list("Power" = "power"), 
+            selected = "Power"
+            )
+        ),
+      ),
+      div(
+        id = "sidebar_selection_container",
+        actionButton("upload", "Upload & Run", icon = icon("play"), style = 'width: 88%; margin-top: 40px; margin-bottom: 20px;')
+      ),
+    # ),  # TODO: not working
+    menuItem(HTML("<strong>&nbsp;&nbsp;Tumor Growth Inhibition</strong>"), tabName = "tgi", icon = icon("dashboard"))
     # menuItem("Source code", icon = icon("file-code-o"), 
-    #     href = "https://github.com/rstudio/shinydashboard/")
+    # href = "https://github.com/rstudio/shinydashboard/"),
   )
 )
+
+
 
 body <- dashboardBody(
   tags$head(
@@ -184,7 +188,8 @@ body <- dashboardBody(
     #         ),
     #       ),
     # ),
-    tabItem(tabName = "realData",
+    tabItem(tabName = "doseFinding",
+      h1(HTML("<span style='color: green; font-family: Arial, sans-serif;margin-bottom: 30px; display: block;'>Dose Finding Analysis</span>")),
       fluidRow(
         tabBox(
           title = "", width = 12, height = 800,
@@ -271,7 +276,7 @@ body <- dashboardBody(
                       title = "DR Model: ROC Curve", status = "info", 
                       solidHeader = TRUE, width = 6, # height = "520px",
                       withSpinner(plotOutput("DR_ROCplot")),
-                      textOutput("DR_AUC_text"),
+                      # textOutput("DR_AUC_text"),
                     ),
                   ),
                 ),
@@ -391,7 +396,7 @@ body <- dashboardBody(
                         title = "ER Model: ROC Curve", status = "primary", 
                         solidHeader = TRUE, width = 6, # height = "520px",
                         withSpinner(plotOutput("ER_ROCplot")),
-                        textOutput("ER_AUC_text"),
+                        # textOutput("ER_AUC_text"),
                         ),
                     )
                   ),
@@ -522,6 +527,60 @@ body <- dashboardBody(
             includeMarkdown("doc.md")
           )
         ),
+      )
+    ),
+    tabItem(tabName = "tgi",
+      h1(HTML("<span style='color: green; font-family: Arial, sans-serif;margin-bottom: 10px; display: block;'>Tumor Growth Inhibition Model</span>")),
+      fluidRow(
+        box(
+          solidHeader = TRUE, width = 4,
+          p("Load data of type:", style = "margin: 0px 5px 0px;font-weight: bold; font-size: 18px;"),
+          div(
+            id = "sidebar_selection_container",
+            selectInput("data_type_tgi", label = NULL, 
+              choices = list("rds | rda | rdata" = "rdss", "csv" = "csv", "txt" = "txt"), 
+              selected = "rds | rda | rdata")
+          ),
+          div(
+            id = "upload_file_container",
+            fileInput(inputId = "file_tgi", label = NULL,
+              accept = c(
+                "text/csv",
+                "text/comma-separated-values,text/plain",
+                ".csv"
+              )
+            ),
+          ),
+          div(
+            id = "sidebar_selection_container",
+            actionButton("upload_tgi", "Upload & Run", icon = icon("play"), style = 'width: 100%; margin-top: -20px; margin-bottom: 10px;')
+          ),
+        ),
+      ),
+      fluidRow(
+        box(
+          title = HTML("<strong>Data Preview</strong>"),
+          solidHeader = TRUE, width = 6,
+          tableOutput("tgi_data_preview")
+        ),
+        box(
+          title = HTML("<strong>Model Summary</strong>"),
+          solidHeader = TRUE, width = 6,
+          verbatimTextOutput("tgi_fit_summary")
+        )
+      ),
+      fluidRow(
+        box(
+          title = HTML("<strong>Model Fit</strong>"),
+          solidHeader = TRUE, width = 6,
+          plotOutput("tgi_fit_plot")
+        ),
+        box(
+          title = HTML("<strong>Residuals</strong>"),
+          solidHeader = TRUE, width = 6,
+          plotOutput("tgi_resFitted")
+        )
+        
       )
     )
   )
