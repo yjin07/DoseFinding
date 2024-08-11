@@ -20,11 +20,11 @@ get_dr_results <- function(df, input, output) {
 
     if (input$responseType == "Continuous") {
         p_dr <- ggplot() +
-            geom_point(data = df, aes(x = Dose, y = log(Response)), color = "blue", alpha = 0.5) +  # 数据点
+            geom_point(data = df, aes(x = Dose, y = Response), color = "blue", alpha = 0.5) +  # 数据点
             geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线
             labs(title = paste0("Reponse: ", type, "\nDR Model: ", input$dr_model, "\nNo Covariates"),
                 x = "Dose",
-                y = "log(Response)") +
+                y = "Response") +
             theme_minimal()
 
 
@@ -36,7 +36,7 @@ get_dr_results <- function(df, input, output) {
         })
 
         output$DR_ResFitplot <- renderPlot({
-            plot(log(fit_dr$fitted_values), fit_dr$residuals, 
+            plot(fit_dr$fitted_values, fit_dr$residuals, 
             main = paste0("Residuals vs Fitted (DR: ", input$dr_model, ")"), 
             xlab = "Fitted values", ylab = "Residuals")
             abline(h = 0, col = "red")

@@ -68,22 +68,22 @@ get_dr_bootstrap <- function(df, input, output) {
             group_by(Dose) %>%
             summarise(
                 n = n(),
-                mean_log_response = mean(log(Response)),
-                sd_log_response = sd(log(Response)),
-                se_log_response = sd_log_response / sqrt(n),
-            ci_low = mean_log_response - qt(0.975, df = n - 1) * se_log_response,
-            ci_high = mean_log_response + qt(0.975, df = n - 1) * se_log_response
+                mean_response = mean(Response),
+                sd_response = sd(Response),
+                se_response = sd_response / sqrt(n),
+            ci_low = mean_response - qt(0.975, df = n - 1) * se_response,
+            ci_high = mean_response + qt(0.975, df = n - 1) * se_response
             )
 
         p_dr0 <- ggplot() +
             geom_errorbar(data = df_summary, aes(x = Dose, ymin = ci_low, ymax = ci_high), width = 0.2) +  # Error bars
-            geom_point(data = df_valid, aes(x = Dose, y = log(Response)), color = "orange", alpha = 0.5) +  # 数据点
-            geom_point(data = df_summary, aes(x = Dose, y = mean_log_response), color = "black", size = 2) +  # 数据点
+            geom_point(data = df_valid, aes(x = Dose, y = Response), color = "orange", alpha = 0.5) +  # 数据点
+            geom_point(data = df_summary, aes(x = Dose, y = mean_response), color = "black", size = 2) +  # 数据点
             geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线
             geom_ribbon(data = fit_df2, aes(x = Dose, ymin = CI_low, ymax = CI_high), alpha = 0.2, fill = "grey") +  # 置信区间
             labs(title = paste0("Reponse: ", type, "\nDR Model: ", input$dr_model, "\nNo Covariates"),
                 x = "Dose",
-                y = "log(Response)"
+                y = "Response"
             ) +
             theme_minimal()
     } else {

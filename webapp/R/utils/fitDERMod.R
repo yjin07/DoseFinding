@@ -52,11 +52,6 @@ fitDERMod <- function(dose, exposure, resp, data = NULL, model = NULL,
 }
 
 
-# * -------------------------------------------------
-# * In this predict method, the response of continuous
-# * case is already in log scale because of the mean 
-# * are calculated in log scale.
-# * -------------------------------------------------
 predict.DERMod <- function(object, newdata, n = 1e4, type = "response") {
     fit1 <- object$fit1   # * ERMod object
     fit2 <- object$fit2   # * lm object

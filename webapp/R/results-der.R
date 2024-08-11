@@ -46,19 +46,19 @@ get_der_results <- function(df, input, output) {
 
     if (input$responseType == "Continuous") {
         p_der <- ggplot() +
-            geom_point(data = df, aes(x = Dose, y = log(Response)), color = "blue", alpha = 0.5) +  # 数据点
+            geom_point(data = df, aes(x = Dose, y = Response), color = "blue", alpha = 0.5) +  # 数据点
             geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线
             labs(title = paste0("Response: ", type, "\nER Model: ", input$er_model, "\nDE Model: ", input$de_model,  "\nNo Covariates"),
                 x = "Dose",
-                y = "log(Response)") +
+                y = "Response") +
             theme_minimal()
 
         p_er <- ggplot() +
-            geom_point(data = df, aes(x = Exposure, y = log(Response)), color = "blue", alpha = 0.5) +  # 数据点
+            geom_point(data = df, aes(x = Exposure, y = Response), color = "blue", alpha = 0.5) +  # 数据点
             geom_line(data = fit_df, aes(x = Exposure, y = Fitted), color = "red", size = 1) +  # 拟合曲线
             labs(title = paste0("Response: ", type, "\nER Model: ", input$er_model),
                 x = "Exposure",
-                y = "log(Response)") +
+                y = "Response") +
             theme_minimal()
 
 
@@ -70,7 +70,7 @@ get_der_results <- function(df, input, output) {
         })
 
         output$ER_ResFitplot <- renderPlot({
-            plot(log(fit_er$fitted_values), fit_er$residuals, 
+            plot(fit_er$fitted_values, fit_er$residuals, 
             main = paste0("Residuals vs Fitted (ER: ", input$er_model, ")"), 
             xlab = "Fitted values", ylab = "Residuals")
             abline(h = 0, col = "red")
@@ -199,19 +199,19 @@ get_der_results_withCovars <- function(df, input, output, addCovars, pred_data_d
 
     if (input$responseType == "Continuous") {
         p_der <- ggplot() +
-            geom_point(data = df, aes(x = Dose, y = log(Response)), color = "blue", alpha = 0.5) +  # 数据点
+            geom_point(data = df, aes(x = Dose, y = Response), color = "blue", alpha = 0.5) +  # 数据点
             geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线
             labs(title = paste0("Response: ", type, "\nER Model: ", input$er_model, "\nDE Model: ", input$de_model,  "\nCovariates: ", deparse(addCovars)),
                 x = "Dose",
-                y = "log(Response)") +
+                y = "Response") +
             theme_minimal()
 
         p_er <- ggplot() +
-            geom_point(data = df, aes(x = Exposure, y = log(Response)), color = "blue", alpha = 0.5) +  # 数据点
+            geom_point(data = df, aes(x = Exposure, y = Response), color = "blue", alpha = 0.5) +  # 数据点
             geom_line(data = fit_df, aes(x = Exposure, y = Fitted), color = "red", size = 1) +  # 拟合曲线
             labs(title = paste0("Response: ", type, "\nER Model: ", input$er_model),
                 x = "Exposure",
-                y = "log(Response)") +
+                y = "Response") +
             theme_minimal()
 
 
@@ -223,7 +223,7 @@ get_der_results_withCovars <- function(df, input, output, addCovars, pred_data_d
         })
 
         output$ER_ResFitplot <- renderPlot({
-            plot(log(fit_er$fitted_values), fit_er$residuals, 
+            plot(fit_er$fitted_values, fit_er$residuals, 
             main = paste0("Residuals vs Fitted (ER: ", input$er_model, ")"), 
             xlab = "Fitted values", ylab = "Residuals")
             abline(h = 0, col = "red")

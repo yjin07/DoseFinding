@@ -70,22 +70,22 @@ get_der_bootstrap <- function(df, input, output) {
             group_by(Dose) %>%
             summarise(
                 n = n(),
-                mean_log_response = mean(log(Response)),
-                sd_log_response = sd(log(Response)),
-                se_log_response = sd_log_response / sqrt(n),
-            ci_low = mean_log_response - qt(0.975, df = n - 1) * se_log_response,
-            ci_high = mean_log_response + qt(0.975, df = n - 1) * se_log_response
+                mean_response = mean(Response),
+                sd_response = sd(Response),
+                se_response = sd_response / sqrt(n),
+            ci_low = mean_response - qt(0.975, df = n - 1) * se_response,
+            ci_high = mean_response + qt(0.975, df = n - 1) * se_response
             )
 
         p_der0 <- ggplot() +
             geom_errorbar(data = df_summary, aes(x = Dose, ymin = ci_low, ymax = ci_high), width = 0.2) +  # Error bars
-            geom_point(data = df, aes(x = Dose, y = log(Response)), color = "orange", alpha = 0.5) +  # 数据点
-            geom_point(data = df_summary, aes(x = Dose, y = mean_log_response), color = "black", size = 2) +  # 数据点
+            geom_point(data = df, aes(x = Dose, y = Response), color = "orange", alpha = 0.5) +  # 数据点
+            geom_point(data = df_summary, aes(x = Dose, y = mean_response), color = "black", size = 2) +  # 数据点
             geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线
             geom_ribbon(data = fit_df2, aes(x = Dose, ymin = CI_low, ymax = CI_high), alpha = 0.2, fill = "grey") +  # 置信区间
             labs(title = paste0("Response: ", type, "\nER Model: ", input$er_model, "\nDE Model: ", input$de_model,  "\nNo Covariates"),
                 x = "Dose",
-                y = "log(Response)"
+                y = "Response"
             ) +
             theme_minimal()
     } else {
@@ -138,6 +138,9 @@ get_der_bootstrap_withCovars <- function(df, input, output, addCovars, pred_data
     pred_df$dose <- new_doses
     fitted_values2 <- predict(fit_der, newdata = pred_df, type = "response")
 
+    cat("Pass here ----------------\n")
+    cat("Pass here ----------------\n")
+
     if (input$responseType == "Continuous") {
         fit_df2 <- data.frame(Dose = new_doses, Fitted = fitted_values2)
     } else {
@@ -150,11 +153,13 @@ get_der_bootstrap_withCovars <- function(df, input, output, addCovars, pred_data
     withProgress(message = "Run Bootstrap replicates", value = 0, {
         for (jj in 1:n_bootstrap) {
             ind <- bootstrap_indices(df, method = input$sampling_method)
-            fit_der0 <- fitDERMod(df$Dose[ind], df$Exposure[ind], df$Response[ind], model = input$er_model, type = type)
+            df_boot <- df[ind, ]
+            fit_der0 <- fitDERMod(df_boot$Dose, df_boot$Exposure, df_boot$Response, data = df_boot, model = input$er_model, type = type, addCovars = addCovars)
+
             if (input$responseType == "Continuous") {
-                fitted_vals_bootstrap[jj, ] <- predict(fit_der0, newdata = new_doses, type = "response")
+                fitted_vals_bootstrap[jj, ] <- predict(fit_der0, newdata = pred_df, type = "response")
             } else {
-                fitted_vals_bootstrap[jj, ] <- inv_logit(predict(fit_der0, newdata = new_doses, type = "response"))
+                fitted_vals_bootstrap[jj, ] <- inv_logit(predict(fit_der0, newdata = pred_df, type = "response"))
             }
 
             incProgress(1/n_bootstrap, detail = paste("\nBootstrap sample", jj))
@@ -179,7 +184,7 @@ get_der_bootstrap_withCovars <- function(df, input, output, addCovars, pred_data
         doi_mean <- fit_df2$Fitted[doi_ind]
         doi_ci_low <- fit_df2$CI_low[doi_ind]
         doi_ci_high <- fit_df2$CI_high[doi_ind]
-        log_info("DOI:", doi, "Mean:", doi_mean, "CI_low:", doi_ci_low, "CI_high:", doi_ci_high)
+        log_info("DOI:", doi, " Mean:", round(doi_mean, 5), " CI_low:", round(doi_ci_low, 5), " CI_high:", round(doi_ci_high, 5))
         output$doi_res <- renderText({
             paste("Selected dose level:", doi, "\nMean:", round(doi_mean, 2), "\nCI lower:", round(doi_ci_low, 2), "\nCI upper:", round(doi_ci_high, 2))
         })
@@ -195,17 +200,17 @@ get_der_bootstrap_withCovars <- function(df, input, output, addCovars, pred_data
             group_by(Dose) %>%
             summarise(
                 n = n(),
-                mean_log_response = mean(log(Response)),
-                sd_log_response = sd(log(Response)),
-                se_log_response = sd_log_response / sqrt(n),
-            ci_low = mean_log_response - qt(0.975, df = n - 1) * se_log_response,
-            ci_high = mean_log_response + qt(0.975, df = n - 1) * se_log_response
+                mean_response = mean(Response),
+                sd_response = sd(Response),
+                se_response = sd_response / sqrt(n),
+            ci_low = mean_response - qt(0.975, df = n - 1) * se_response,
+            ci_high = mean_response + qt(0.975, df = n - 1) * se_response
             )
 
         p_der0 <- ggplot() +
             geom_errorbar(data = df_summary, aes(x = Dose, ymin = ci_low, ymax = ci_high), width = 0.2) +  # Error bars
-            geom_point(data = df, aes(x = Dose, y = log(Response)), color = "orange", alpha = 0.5) +  # 数据点
-            geom_point(data = df_summary, aes(x = Dose, y = mean_log_response), color = "black", size = 2) +  # 数据点
+            geom_point(data = df, aes(x = Dose, y = Response), color = "orange", alpha = 0.5) +  # 数据点
+            geom_point(data = df_summary, aes(x = Dose, y = mean_response), color = "black", size = 2) +  # 数据点
             geom_line(data = fit_df2, aes(x = Dose, y = Fitted), color = "red", size = 1) +  # 拟合曲线
             geom_ribbon(data = fit_df2, aes(x = Dose, ymin = CI_low, ymax = CI_high), alpha = 0.2, fill = "grey") +  # 置信区间
             labs(
@@ -214,7 +219,7 @@ get_der_bootstrap_withCovars <- function(df, input, output, addCovars, pred_data
                                 "\nDE Model: ", input$de_model,  "\nCovariates: ", deparse(addCovars),
                                 "\nConfidence Level: ", input$conf_lvl1_der),
                 x = "Dose",
-                y = "log(Response)"
+                y = "Response"
             ) +
             theme_minimal()
     } else {
