@@ -15,6 +15,15 @@ get_tgi_results <- function(df, input, output, selected = NULL) {
         summary(fit)
     })
 
+    output$download_tgi_summary <- downloadHandler(
+        filename = function() {
+            paste("tgi_fit_summary", ".txt", sep = "")
+        },
+        content = function(file) {
+            writeLines(capture.output(summary(fit)), file)
+        }
+    )
+
     output$tgi_fit_plot <- renderPlot({
         if (is.null(selected)) {
             selected <- sample(1:length(unique(df$SUBJID)), 5)
@@ -27,9 +36,6 @@ get_tgi_results <- function(df, input, output, selected = NULL) {
         y_range <- range(selected_Y_values)
 
         col_vals <- 1:length(selected)
-
-
-        par(mar = c(6, 4, 4, 2) + 0.1, xpd = TRUE) 
 
         ii <- 1
         plot(subset(df, SUBJID == selected[ii])$TIME, subset(df, SUBJID == selected[ii])$Y, type = "p", xlab = "Time", ylab = "Y", pch = 16, col = ii, ylim = y_range,
@@ -57,6 +63,4 @@ get_tgi_results <- function(df, input, output, selected = NULL) {
         qqline(fit$residuals)
     })
 
-
-    
 }

@@ -28,14 +28,32 @@ get_der_results <- function(df, input, output) {
         summary(fit_er)
     })
 
+    output$download_ER_summary <- downloadHandler(
+        filename = function() {
+            paste("ER_summary_", input$er_model, ".txt", sep = "")
+        },
+        content = function(file) {
+            writeLines(capture.output(summary(fit_er)), file)
+        }
+    )
+
     output$DE_summary <- renderPrint({
         summary(fit_de)
-    })
+    })    
+
+    output$download_DE_summary <- downloadHandler(
+        filename = function() {
+            paste("DE_summary_NoCovariates", ".txt", sep = "")
+        },
+        content = function(file) {
+            writeLines(capture.output(summary(fit_de)), file)
+        }
+    )
 
     p_de <- ggplot() +
         geom_point(data = df, aes(x = Dose, y = Exposure), color = "blue", alpha = 0.5) +
         geom_line(data = fit_df1, aes(x = Dose, y = exp(Fitted)), color = "red", size = 1) + 
-        labs(
+        labs(title = paste0("DE Model: ", input$de_model, "\nNo Covariates"),
             x = "Dose",
             y = "Exposure") +
         theme_minimal()
@@ -152,9 +170,27 @@ get_der_results_withCovars <- function(df, input, output, addCovars, pred_data_d
         summary(fit_er)
     })
 
+    output$download_ER_summary <- downloadHandler(
+        filename = function() {
+            paste("ER_summary_", input$er_model, ".txt", sep = "")
+        },
+        content = function(file) {
+            writeLines(capture.output(summary(fit_er)), file)
+        }
+    )
+
     output$DE_summary <- renderPrint({
         summary(fit_de)
     })
+
+    output$download_DE_summary <- downloadHandler(
+        filename = function() {
+            paste("DE_summary_", deparse(addCovars), ".txt", sep = "")
+        },
+        content = function(file) {
+            writeLines(capture.output(summary(fit_de)), file)
+        }
+    )
     
 
     valid_exposure <- complete.cases(df$Exposure)

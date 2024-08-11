@@ -18,6 +18,19 @@ get_dr_results <- function(df, input, output) {
         summary(fit_dr)
     })
 
+    # * ---------------------
+    # * Download Functions
+    # * ---------------------
+    output$download_DR_summary <- downloadHandler(
+        filename = function() {
+            paste("DR_summary_", input$dr_model, ".txt", sep = "")
+        },
+        content = function(file) {
+            writeLines(capture.output(summary(fit_dr)), file)
+        }
+    )
+
+
     if (input$responseType == "Continuous") {
         p_dr <- ggplot() +
             geom_point(data = df, aes(x = Dose, y = Response), color = "blue", alpha = 0.5) +  # 数据点
