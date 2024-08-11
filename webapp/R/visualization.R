@@ -102,7 +102,7 @@ generate_plots_bin <- function(der_data, der_data_all, er_summary, n_quantile) {
                 position = position_dodge(width = 0.9)) +
       geom_text(aes(label = paste0(round(resp_perc,1),"%")), vjust = -1.9, color = "grey30", size = 3,
                 position = position_dodge(width = 0.9)) +
-      labs(x = "AUC Exposure Quantile (ng/ml*hr)",
+      labs(x = "Exposure Quantile",
           y = "Percent Responders (%)",
           # title = "Exposure-Response Quantile Plot",
           subtitle = paste(n_quantile, "Bins") ) +
@@ -123,7 +123,7 @@ generate_plots_bin <- function(der_data, der_data_all, er_summary, n_quantile) {
                   color = "grey10",
                   method = "glm",
                   method.args = list(family = "binomial")) +
-      labs(x= "AUC (ng/ml*hr)", y = "Probability of Response", color = "Dose Level") +
+      labs(x= "Exposure", y = "Probability of Response", color = "Dose Level") +
       scale_x_continuous(limits= c(-1, ceiling(max(der_data$Exposure) * 1.5 / 10) * 10))
     
     # Summary plot of exposures
@@ -132,7 +132,7 @@ generate_plots_bin <- function(der_data, der_data_all, er_summary, n_quantile) {
       stat_boxplot(geom = "errorbar", width = 0.5) +
       geom_boxplot(outlier.colour = NA, width = 0.7, alpha = 0.5) +
       scale_x_continuous(limits= c(-1, ceiling(max(der_data$Exposure) * 1.5 / 10) * 10)) +
-      labs(x= "AUC (ng/ml*hr)", y = "Dose Group") +
+      labs(x= "Exposure", y = "Dose Group") +
       guides(color = "none", fill = "none")
     
     # Combining ER Plot and exposure summary plot
@@ -149,7 +149,7 @@ generate_plots_cont <- function(der_data, der_data_all, er_summary, n_quantile) 
                 position = position_dodge(width = 0.9)) +
       geom_text(aes(label = round(mean_resp, 2)), vjust = -1.9, color = "grey30", size = 3,
                 position = position_dodge(width = 0.9)) +
-      labs(x = "AUC Exposure Quantile (ng/ml*hr)",
+      labs(x = "Exposure Quantile",
           y = "Mean Response",
           subtitle = paste(n_quantile, "Bins")) +
       scale_y_continuous() +
@@ -167,7 +167,7 @@ generate_plots_cont <- function(der_data, der_data_all, er_summary, n_quantile) 
                   aes(x = Exposure, y = Response),
                   color = "grey10",
                   method = "lm") +
-      labs(x = "AUC (ng/ml*hr)", y = "Response", color = "Dose Level") +
+      labs(x = "Exposure", y = "Response", color = "Dose Level") +
       scale_x_continuous(limits = c(-1, ceiling(max(der_data$Exposure) * 1.5 / 10) * 10))
     
     # Summary plot of exposures
@@ -176,7 +176,7 @@ generate_plots_cont <- function(der_data, der_data_all, er_summary, n_quantile) 
       stat_boxplot(geom = "errorbar", width = 0.5) +
       geom_boxplot(outlier.colour = NA, width = 0.7, alpha = 0.5) +
       scale_x_continuous(limits = c(-1, ceiling(max(der_data$Exposure) * 1.5 / 10) * 10)) +
-      labs(x = "AUC (ng/ml*hr)", y = "Dose Group") +
+      labs(x = "Exposure", y = "Dose Group") +
       guides(color = "none", fill = "none")
     
     # Combining ER Plot and exposure summary plot
@@ -195,10 +195,6 @@ generate_and_render_real_data <- function(output, data = NULL, input = NULL) {
   
   output$exposure_table_real <- renderDT({
     datatable(der_data1)
-  })
-
-  output$data_preview <- renderTable({
-    head(der_data1, 10)
   })
 
   der_data <- na.omit(der_data1)

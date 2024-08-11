@@ -14,3 +14,5 @@ dose*
 webapp/R/utils/fitTGIMod.R
 TGI.R
 TGI.sas
+*tmp*
+*lognormal*

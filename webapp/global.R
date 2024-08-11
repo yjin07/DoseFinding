@@ -31,69 +31,11 @@ source(here("R", "bootstrap-dr.R"))
 source(here("R", "results-tgi.R"))
 
 
-# uploadChecking <- function(input, myData) {
-#   if (is.null(input$file1)) {
-#     showModal(modalDialog(
-#       title = "Error",
-#       "No file uploaded. Please upload a file first.",
-#       easyClose = TRUE,
-#       footer = NULL
-#     ))
-#   } else {
-#     req(input$file1)
-#     ext <- tools::file_ext(input$file1$datapath)
-#     data_type <- input$data_type
-
-#     if (!((data_type == "csv" && ext == "csv") || 
-#           (data_type == "txt" && ext == "txt") ||
-#           (data_type == "rdss" && ext %in% c("rds", "rda", "rdata")))) {
-#         showModal(modalDialog(
-#           title = "Error",
-#           "File type does not match the selected data type. Please upload a file with the correct extension.",
-#           easyClose = TRUE,
-#           footer = NULL
-#         ))
-#     } 
-    
-#     df <- NULL
-#     if (data_type == "csv" && ext == "csv") {
-#       df <- read.csv(input$file1$datapath, header = TRUE)
-#     } else if (data_type == "txt" && ext == "txt") {
-#       df <- read.table(input$file1$datapath, header = TRUE, sep = "\t")
-#     } else if (data_type == "rdss" && ext %in% c("rds", "rda", "rdata")) {
-#       if (ext == "rds") {
-#         df <- readRDS(input$file1$datapath)
-#       } else if (ext %in% c("rda", "rdata")) {
-#         load(input$file1$datapath)
-#         df <- get(ls()[ls() != "file1"])  # 假设只加载一个对象
-#       }
-#     }
-
-#     if (all(df$Response %in% c(0,1)) && input$responseType != "Binary" || 
-#         !all(df$Response %in% c(0,1)) && input$responseType != "Continuous") {
-#       showModal(modalDialog(
-#         title = "Error",
-#         "Response type does not match the uploaded data. Please select the correct response type.",
-#         easyClose = TRUE,
-#         footer = NULL
-#       ))
-#     } else {
-#       showModal(modalDialog(
-#         title = "Success",
-#         "File uploaded successfully.",
-#         easyClose = TRUE,
-#         footer = NULL
-#       ))
-#       myData(df)
-#     }
-#   }
-# }
-
 
 uploadChecking <- function(input, myData) {
   if (is.null(input$file1)) {
     showModal(modalDialog(
-      title = "Error",
+      title = HTML("<b style='color:red;'>Error</b>"),
       "No file uploaded. Please upload a file first.",
       easyClose = TRUE,
       footer = NULL
@@ -107,7 +49,7 @@ uploadChecking <- function(input, myData) {
           (data_type == "txt" && ext == "txt") ||
           (data_type == "rdss" && ext %in% c("rds", "rda", "rdata")))) {
       showModal(modalDialog(
-        title = "Error",
+        title = HTML("<b style='color:red;'>Error</b>"),
         "File type does not match the selected data type. Please upload a file with the correct extension.",
         easyClose = TRUE,
         footer = NULL
@@ -143,7 +85,7 @@ uploadChecking <- function(input, myData) {
 
     if (is.null(df)) {
       showModal(modalDialog(
-        title = "Error",
+        title = HTML("<b style='color:red;'>Error</b>"),
         "Error reading the file. Please ensure it is properly formatted and has a header.",
         easyClose = TRUE,
         footer = NULL
@@ -154,7 +96,7 @@ uploadChecking <- function(input, myData) {
     required_columns <- c("Dose", "Exposure", "Response")
     if (!all(required_columns %in% colnames(df))) {
       showModal(modalDialog(
-        title = "Error",
+        title = HTML("<b style='color:red;'>Error</b>"),
         paste("The uploaded file must contain the following columns:", 
               paste(required_columns, collapse = ", ")),
         easyClose = TRUE,
@@ -166,14 +108,14 @@ uploadChecking <- function(input, myData) {
     if ((all(df$Response %in% c(0,1)) && input$responseType != "Binary") || 
         (!all(df$Response %in% c(0,1)) && input$responseType != "Continuous")) {
       showModal(modalDialog(
-        title = "Error",
+        title = HTML("<b style='color:red;'>Error</b>"),
         "Response type does not match the uploaded data. Please select the correct response type.",
         easyClose = TRUE,
         footer = NULL
       ))
     } else {
       showModal(modalDialog(
-        title = "Success",
+        title = HTML("<b style='color:green;'>Success</b>"),
         "File uploaded successfully.",
         easyClose = TRUE,
         footer = NULL
@@ -189,7 +131,7 @@ uploadChecking <- function(input, myData) {
 uploadCheckingTGI <- function(input, myData) {
   if (is.null(input$file_tgi)) {
     showModal(modalDialog(
-      title = "Error",
+      title = HTML("<b style='color:red;'>Error</b>"),
       "No file uploaded. Please upload a file first.",
       easyClose = TRUE,
       footer = NULL
@@ -203,7 +145,7 @@ uploadCheckingTGI <- function(input, myData) {
           (data_type == "txt" && ext == "txt") ||
           (data_type == "rdss" && ext %in% c("rds", "rda", "rdata")))) {
       showModal(modalDialog(
-        title = "Error",
+        title = HTML("<b style='color:red;'>Error</b>"),
         "File type does not match the selected data type. Please upload a file with the correct extension.",
         easyClose = TRUE,
         footer = NULL
@@ -239,7 +181,7 @@ uploadCheckingTGI <- function(input, myData) {
 
     if (is.null(df)) {
       showModal(modalDialog(
-        title = "Error",
+        title = HTML("<b style='color:red;'>Error</b>"),
         "Error reading the file. Please ensure it is properly formatted and has a header.",
         easyClose = TRUE,
         footer = NULL
@@ -250,7 +192,7 @@ uploadCheckingTGI <- function(input, myData) {
     required_columns <- c("Y0", "TIME", "Y", "SUBJID")
     if (!all(required_columns %in% colnames(df))) {
       showModal(modalDialog(
-        title = "Error",
+        title = HTML("<b style='color:red;'>Error</b>"),
         paste("The uploaded file must contain the following columns:", 
               paste(required_columns, collapse = ", ")),
         easyClose = TRUE,
@@ -259,7 +201,7 @@ uploadCheckingTGI <- function(input, myData) {
       return(NULL)
     } else {
       showModal(modalDialog(
-        title = "Success",
+        title = HTML("<b style='color:green;'>Success</b>"),
         "File uploaded successfully.",
         easyClose = TRUE,
         footer = NULL

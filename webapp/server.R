@@ -214,7 +214,6 @@ server <- function(input, output, session) {
     input$de_model
   ),{
     log_info("Change model...")
-    # myData(NULL)  # * Not necessary
   })
 
   observeEvent(myData(),{
@@ -237,7 +236,7 @@ server <- function(input, output, session) {
 
     if (is.null(input$selectCovs)) {
       showModal(modalDialog(
-        title = "Error",
+        title = HTML("<b style='color:red;'>Error</b>"),
         "No covariates selected. Please select at least one covariate.",
         easyClose = TRUE,
         footer = NULL
@@ -276,7 +275,7 @@ server <- function(input, output, session) {
       formatted_vars <- paste0("$", empty_vars)
 
       showModal(modalDialog(
-        title = "Error",
+        title = HTML("<b style='color:red;'>Error</b>"),
         HTML(paste0("The following variables have empty values:<br>",
                     paste(formatted_vars, collapse = "<br>"),
                     "<br><br>Please enter values for all selected variables.")),
@@ -309,7 +308,7 @@ server <- function(input, output, session) {
   observeEvent(input$run_bootstrap_dr, {
     if (is.null(myData())) {
       showModal(modalDialog(
-        title = "Error",
+        title = HTML("<b style='color:red;'>Error</b>"),
         "No data uploaded. Please upload a file first.",
         easyClose = TRUE,
         footer = NULL
@@ -328,7 +327,7 @@ server <- function(input, output, session) {
 
       if (!is_numeric(input$doi_dr)) {
         showModal(modalDialog(
-          title = "Error",
+          title = HTML("<b style='color:red;'>Error</b>"),
           "Please enter a valid number for Dose of Interest.",
           easyClose = TRUE,
           footer = NULL
@@ -341,7 +340,7 @@ server <- function(input, output, session) {
 
       if (doi < 0) {
         showModal(modalDialog(
-          title = "Error",
+          title = HTML("<b style='color:red;'>Error</b>"),
           "Dose of Interest cannot be negative.",
           easyClose = TRUE,
           footer = NULL
@@ -371,7 +370,7 @@ server <- function(input, output, session) {
   observeEvent(input$run_bootstrap_der, {  # TODO: continue the work from here
     if (is.null(myData())) {
       showModal(modalDialog(
-        title = "Error",
+        title = HTML("<b style='color:red;'>Error</b>"),
         "No data uploaded. Please upload a file first.",
         easyClose = TRUE,
         footer = NULL
@@ -390,7 +389,7 @@ server <- function(input, output, session) {
 
       if (!is_numeric(input$doi_der)) {
         showModal(modalDialog(
-          title = "Error",
+          title = HTML("<b style='color:red;'>Error</b>"),
           "Please enter a valid number for Dose of Interest.",
           easyClose = TRUE,
           footer = NULL
@@ -403,7 +402,7 @@ server <- function(input, output, session) {
 
       if (doi < 0) {
         showModal(modalDialog(
-          title = "Error",
+          title = HTML("<b style='color:red;'>Error</b>"),
           "Dose of Interest cannot be negative.",
           easyClose = TRUE,
           footer = NULL
@@ -455,7 +454,7 @@ server <- function(input, output, session) {
         formatted_vars <- paste0("$", empty_vars)
 
         showModal(modalDialog(
-          title = "Error",
+          title = HTML("<b style='color:red;'>Error</b>"),
           HTML(paste0("The following variables have empty values:<br>",
                       paste(formatted_vars, collapse = "<br>"),
                       "<br><br>Please enter values for all selected variables.")),
@@ -495,6 +494,22 @@ server <- function(input, output, session) {
     log_info("User trying to upload data of TGI...")
     myTGIData(NULL)
     uploadCheckingTGI(input, myTGIData)
+
+    output$select_subjects <- renderUI({
+      df <- myTGIData()
+      if (is.null(df)) return(NULL)
+
+      tagList(
+        multiInput(
+          inputId = "selectSubjects",
+          label = "Select subjects to include in the plot",
+          choices = unique(df$SUBJID),
+          choiceNames = unique(df$SUBJID),  # 添加“Select All”选项
+        ),
+
+        actionButton("tgi_run_pred", "Generate Plot")
+      )
+    })
   })
 
   observeEvent(myTGIData(), {
@@ -503,5 +518,25 @@ server <- function(input, output, session) {
 
     get_tgi_results(df, input, output)
   })
+
+  observeEvent(input$tgi_run_pred, {
+    req(myTGIData())
+    df <- myTGIData()
+
+    selected <- input$selectSubjects
+    if (length(selected) == 0) {
+      showModal(modalDialog(
+        title = HTML("<b style='color:red;'>Error</b>"),
+        "No subjects selected. Please select at least one subject.",
+        easyClose = TRUE,
+        footer = NULL
+      ))
+      return()
+    }
+
+    get_tgi_results(df, input, output, selected)
+  })
+
+
 
 }

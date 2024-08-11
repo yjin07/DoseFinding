@@ -1,4 +1,3 @@
-.h1, h1{color: Black; font-weight: bold;}
 
 /* .main-header .logo {
     font-family: "Georgia", Times, "Times New Roman", serif;
@@ -7,52 +6,52 @@
   } */
 
 /* logo (HOME) */
-.skin-blue .main-header .logo {
-background-color: red;
+.skin-red .main-header .logo {
+background-color: #d73a26;
 }
 
 /* logo (HOME) when hovered */
-.skin-blue .main-header .logo:hover {
-background-color: red;
+.skin-red .main-header .logo:hover {
+background-color: #d73a26;;
 }
 
 /* navbar (rest of the header) */
-.skin-blue .main-header .navbar {
-background-color: green;
+.skin-red .main-header .navbar {
+background-color: #de4b39;
 }
 
 /* main sidebar */
-.skin-blue .main-sidebar {
-background-color: black;
+.skin-red .main-sidebar {
+background-color: #222d33;
 }
 
 /* active selected tab in the sidebarmenu */
-.skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
-background-color: brown;
+.skin-red .main-sidebar .sidebar .sidebar-menu .active a{
+background-color: #1e282c;
 }
 
 /* other links in the sidebarmenu */
-.skin-blue .main-sidebar .sidebar .sidebar-menu a{
-background-color: grey;
-color: #000000;
+.skin-red .main-sidebar .sidebar .sidebar-menu a{
+background-color: #222d33;
+color: white;
 }
 
 /* other links in the sidebarmenu when hovered */
-.skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
-background-color: #ff69b4;
+.skin-red .main-sidebar .sidebar .sidebar-menu a:hover{
+background-color: #1e282c;
 }
 /* toggle button when hovered  */
-.skin-blue .main-header .navbar .sidebar-toggle:hover{
-background-color: #ff69b4;
+.skin-red .main-header .navbar .sidebar-toggle:hover{
+background-color: #d73a26;;
 }
+
+/* .skin-red .sidebar .nav-item .nav-link.active {
+  background-color: red !important;
+} */
 
 /* body */
 .content-wrapper, .right-side {
 background-color: white;
-}
-
-#exposure_table_container {
-width: 500px; height: 600px; overflow: auto;
 }
 
 #plot1_container {
@@ -64,9 +63,14 @@ width: 800px; height: 400px; overflow: auto;
 }
 
 #upload_file_container {
-margin: -10px 5px 0px; width: 250px; height: 60px;
+margin: -10px 5px 0px 20px; width: 250px; height: 60px;
 }
 
 #sidebar_selection_container {
-  margin: 0px 5px 0px; width: 250px; /* height: 80px; */
+  margin: 0px 5px 0px 20px; width: 250px; /* height: 80px; */
+}
+
+.content-wrapper, .right-side {
+  background-color: white;
+  overflow: auto;
 }

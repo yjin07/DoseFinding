@@ -1,7 +1,8 @@
-SIDEWIDTH = 270
+SIDEWIDTH = 280
 
 header <- dashboardHeader(
-  title = "DER analysis", titleWidth = SIDEWIDTH, disable = FALSE,
+  title = tags$span("Dose Finding", style = "font-family: cursive; font-weight: bold;"), 
+  titleWidth = SIDEWIDTH, disable = FALSE,
   dropdownMenu(type = "messages",
     messageItem(
       from = "Sales Dept",
@@ -55,12 +56,8 @@ header <- dashboardHeader(
 siderbar <- dashboardSidebar(
   width = SIDEWIDTH, disable = FALSE,
   sidebarMenu(
-    # menuItem("Simulate Data", tabName = "simulate", icon = icon("dashboard")),
-    # div(style = "margin: 10px 5px; width: 500px",  # Adjust the top and bottom margin as needed
-    #   actionButton("generate", "Generate", icon = icon("play"), style = 'width: 25%;')
-    # ),
-    menuItem(HTML("<strong>&nbsp;&nbsp;Dose Finding</strong>"), tabName = "doseFinding", icon = icon("th")),
-      p("Load data of type:", style = "margin: 10px 5px 0px;font-weight: bold;"),
+    menuItem(HTML("<span style='font-family: Georgia, serif;'>&nbsp;&nbsp;Exposure Informed Dose Selection</span>"), tabName = "doseFinding", icon = icon("th")),
+      p("Load data of type:", style = "margin: 10px 5px 0px 30px;font-weight: bold;"),
       div(
         id = "sidebar_selection_container",
         selectInput("data_type", label = NULL, 
@@ -77,7 +74,7 @@ siderbar <- dashboardSidebar(
           )
         ),
       ),
-      p("Response Type:", style = "margin: 10px 5px 0px;font-weight: bold;"),
+      p("Response Type:", style = "margin: 10px 5px 0px 30px;font-weight: bold;"),
       div(
         id = "sidebar_selection_container",
         radioGroupButtons(
@@ -91,7 +88,7 @@ siderbar <- dashboardSidebar(
           width = '250px'
         ),
       ),
-      p("Model Selection:", style = "margin: 10px 5px 0px;font-weight: bold;"),
+      p("Model Selection:", style = "margin: 10px 5px 0px 30px;font-weight: bold;"),
       div(
         id = "sidebar_selection_container",
         radioGroupButtons(
@@ -105,7 +102,7 @@ siderbar <- dashboardSidebar(
       ),
       conditionalPanel(
         condition = "input.modelType == 'DR'",        
-        p("DR Model:", style = "margin: 10px 5px 0px;font-weight: bold;"),
+        p("DR Model:", style = "margin: 10px 5px 0px 30px;font-weight: bold;"),
         div(
           id = "sidebar_selection_container",
           selectInput("dr_model", label = NULL, # choices = c()
@@ -118,7 +115,7 @@ siderbar <- dashboardSidebar(
       ),
       conditionalPanel(
         condition = "input.modelType == 'DER'",
-        p("ER Model:", style = "margin: 10px 5px 0px;font-weight: bold;"),
+        p("ER Model:", style = "margin: 10px 5px 0px 30px;font-weight: bold;"),
         div(
           id = "sidebar_selection_container",
           selectInput("er_model", label = NULL, # choices = c()
@@ -128,7 +125,7 @@ siderbar <- dashboardSidebar(
             selected = "Sigmoid-Emax"
             )
         ),
-        p("DE Model:", style = "margin: 10px 5px 0px;font-weight: bold;"),
+        p("DE Model:", style = "margin: 10px 5px 0px 30px;font-weight: bold;"),
         div(
           id = "sidebar_selection_container",
           selectInput("de_model", label = NULL, # choices = c()
@@ -141,10 +138,9 @@ siderbar <- dashboardSidebar(
         id = "sidebar_selection_container",
         actionButton("upload", "Upload & Run", icon = icon("play"), style = 'width: 88%; margin-top: 40px; margin-bottom: 20px;')
       ),
-    # ),  # TODO: not working
-    menuItem(HTML("<strong>&nbsp;&nbsp;Tumor Growth Inhibition</strong>"), tabName = "tgi", icon = icon("dashboard"))
-    # menuItem("Source code", icon = icon("file-code-o"), 
-    # href = "https://github.com/rstudio/shinydashboard/"),
+    menuItem(HTML("<span style='font-family: Georgia, serif;'>&nbsp;&nbsp; Tumor Growth Inhibition</span>"), tabName = "tgi", icon = icon("dashboard")),
+    menuItem(HTML("<span style='font-family: Georgia, serif;'>&nbsp;&nbsp; Documentation</span>"), 
+    tabName = "doc", icon = icon("file"))
   )
 )
 
@@ -155,82 +151,52 @@ body <- dashboardBody(
     tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
     tags$script(src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"),  # 加载 MathJax
   ),
-  tags$style(HTML("
-    .content-wrapper, .right-side {
-      background-color: white;
-      overflow: auto;
-    }
-    /* 其他布局调整 */
-  ")),
+  # tags$style(HTML("
+  #   .content-wrapper, .right-side {
+  #     background-color: white;
+  #     overflow: auto;
+  #   }
+  #   /* 其他布局调整 */
+  # ")),
   tabItems(
-    # tabItem(tabName = "simulate",
-    #       div(class = "my-class", h1("Hello world"), p("This is a paragraph, which can be used for instructions.")),
-    #       fluidRow(
-    #         box(
-    #           title = "Source Data", status = "primary", 
-    #           solidHeader = TRUE, width = 4, # height = 600,
-    #           # div(id = "exposure_table_container", withSpinner(DTOutput("exposure_table")))
-    #           withSpinner(DTOutput("exposure_table"))
-    #           ),
-    #         box(
-    #           title = "Exposure-Response Quantile Plot", status = "warning", 
-    #           solidHeader = TRUE, width = 8, # height = 500,
-    #           "Add Box content here.", br(), "More content here.",
-    #           # column(6, div(id = "plot1_container", withSpinner(plotOutput("plot1"))))
-    #           withSpinner(plotOutput("plot1"))
-    #         ),
-    #         box(
-    #           title = "Exposure-Response Logistic Regression Plot", status = "warning", 
-    #           solidHeader = TRUE, width = 8,
-    #           # div(id = "plot2_container", withSpinner(plotOutput("plot2")))
-    #           withSpinner(plotOutput("plot2")),
-    #           "Add Box content here.", br(), "More content here."
-    #         ),
-    #       ),
-    # ),
     tabItem(tabName = "doseFinding",
-      h1(HTML("<span style='color: green; font-family: Arial, sans-serif;margin-bottom: 30px; display: block;'>Dose Finding Analysis</span>")),
+      h1(HTML("<span style='color: #de4b39; font-family: Times, serif; margin-bottom: 30px; display: block;'>Exposure Informed Dose Selection</span>")),
       fluidRow(
         tabBox(
-          title = "", width = 12, height = 800,
+          title = "", width = 12, 
+          height = 800,
           tabPanel(
-            "Description",
-            # fluidRow(
+            HTML("<span style='font-family: Georgia, serif; font-weight: bold;'>Description</span>"),
+            fluidRow(
               box(
-                title = HTML("<b>Data Preview</b>"),
+                title = HTML("<b>Source Data</b>"), 
                 solidHeader = TRUE, width = 10,
-                tableOutput("data_preview")
-                ),
+                withSpinner(DTOutput("exposure_table_real"))
+              ),
               box(
                 title = HTML("<b>Summary Statistics</b>"),
                 solidHeader = TRUE, width = 10,
                 verbatimTextOutput("data_description")
               ),
-              box(
-                title = HTML("<b>Source Data</b>"), # status = "primary", 
-                solidHeader = TRUE, width = 10, # height = 600,
-                withSpinner(DTOutput("exposure_table_real"))
-              ),
+            ),
           ),
           tabPanel(
-            "Visualization", "Add Model content here.",
+            HTML("<span style='font-family: Georgia, serif; font-weight: bold;'>Visualization</span>"),
               fluidRow(
                 box(
                   title = "Exposure-Response Quantile Plot", status = "warning", 
                   solidHeader = TRUE, width = 8, # height = 500,
-                  "Add Box content here.", br(), "More content here.",
                   withSpinner(plotOutput("plot1_real"))
                 ),
                 box(
-                  title = "Exposure-Response Logistic Regression Plot", status = "warning", 
+                  title = "Exposure-Response Regression Plot", status = "warning", 
                   solidHeader = TRUE, width = 8,
                   withSpinner(plotOutput("plot2_real")),
-                  "Add Box content here.", br(), "More content here."
                 ),
               ),
             ),
           tabPanel(
-            "Results",
+            HTML("<span style='font-family: Georgia, serif; font-weight: bold;'>Results</span>"),
             # ! -------------------------------------------------------
             # ! Dose-Response Model
             # ! -------------------------------------------------------
@@ -238,33 +204,36 @@ body <- dashboardBody(
               condition = "input.modelType == 'DR'",
               tabsetPanel(
                 tabPanel(
-                  "DR Model",
-                  box(
-                    title = "DR Model: Fitted Curve", status = "info", 
-                    solidHeader = TRUE, width = 6, height = "475px",
-                    withSpinner(plotOutput("DR_plot")),
-                  ),
-                  box(
-                    title = "DR Model: Summary", status = "info", 
-                    solidHeader = TRUE, width = 6, height = "475px",
-                    verbatimTextOutput("DR_summary")
+                  HTML("<span style='font-family: Georgia, serif;'>DR Model</span>"),
+                  fluidRow(
+                    box(
+                      title = "DR Model: Fitted Curve", status = "info", 
+                      solidHeader = TRUE, width = 6, # height = "475px",
+                      withSpinner(plotOutput("DR_plot")),
+                    ),
+                    box(
+                      title = "DR Model: Summary", status = "info", 
+                      solidHeader = TRUE, width = 6, # height = "475px",
+                      verbatimTextOutput("DR_summary"),
+                      downloadButton("download_DR_summary", "", style = "width: 15%;")
+                    ),
                   ),
                   # ! ----------------------
                   # ! Continuous Response
                   # ! ----------------------
                   conditionalPanel(
                     condition = "input.responseType == 'Continuous'",
-                    box(
-                      title = "DR Model: Q-Q Plot of Residuals", status = "info", 
-                      solidHeader = TRUE, width = 6, height = "475px",
-                      withSpinner(plotOutput("DR_qqplot")),
-                      "Add Box content here.", br(), "More content here."
-                    ),
-                    box(
-                      title = "DR Model: Residuals vs Fitted Values Plot", status = "info", 
-                      solidHeader = TRUE, width = 6, height = "475px",
-                      withSpinner(plotOutput("DR_ResFitplot")),
-                      "Add Box content here.", br(), "More content here."
+                    fluidRow(
+                      box(
+                        title = "DR Model: Q-Q Plot of Residuals", status = "info", 
+                        solidHeader = TRUE, width = 6, # height = "475px",
+                        withSpinner(plotOutput("DR_qqplot")),
+                      ),
+                      box(
+                        title = "DR Model: Residuals vs Fitted Values Plot", status = "info", 
+                        solidHeader = TRUE, width = 6, # height = "475px",
+                        withSpinner(plotOutput("DR_ResFitplot")),
+                      ),
                     ),
                   ),
                   # ! ----------------------
@@ -281,46 +250,48 @@ body <- dashboardBody(
                   ),
                 ),
                 tabPanel(  # TODO: add content here
-                  "DR bootstrap",
-                  box(
-                    title = NULL, solidHeader = TRUE,
-                    width = 6, height = "160px",
-                    sliderTextInput(
-                      inputId = "n_bootstrap_dr",
-                      label = "Bootstrap Replicates:", 
-                      choices = c(100, 500, 1000, 5000, 10000),
-                      grid = TRUE
-                    ),
-                    div(
-                      style = "display: flex; align-items: center;",
-                      prettyRadioButtons(
-                        inputId = "sampling_method_dr",
-                        label = "Resamling Method:", 
-                        choices = list("Full" = "total", "By Dose" = "by_dose"),
-                        inline = TRUE, 
-                        fill = TRUE
+                  HTML("<span style='font-family: Georgia, serif;'>DR Bootstrap</span>"),
+                  fluidRow(
+                    box(
+                      title = NULL, solidHeader = TRUE,
+                      width = 6, height = "160px",
+                      sliderTextInput(
+                        inputId = "n_bootstrap_dr",
+                        label = "Bootstrap Replicates:", 
+                        choices = c(100, 500, 1000, 5000, 10000),
+                        grid = TRUE
                       ),
-                      tags$i(
-                        class = "fa fa-info-circle",
-                        style = "margin-left: 10px; cursor: pointer;",
-                        title = "Full: resample all data points.<br>By Dose: resample by dose level.",
-                        'data-toggle' = "tooltip",
-                        'data-placement' = "right",
-                        'data-html' = "true"
-                      )
+                      div(
+                        style = "display: flex; align-items: center;",
+                        prettyRadioButtons(
+                          inputId = "sampling_method_dr",
+                          label = "Resamling Method:", 
+                          choices = list("Full" = "total", "By Dose" = "by_dose"),
+                          inline = TRUE, 
+                          fill = TRUE
+                        ),
+                        tags$i(
+                          class = "fa fa-info-circle",
+                          style = "margin-left: 10px; cursor: pointer;",
+                          title = "Full: resample all data points.<br>By Dose: resample by dose level.",
+                          'data-toggle' = "tooltip",
+                          'data-placement' = "right",
+                          'data-html' = "true"
+                        )
+                      ),
                     ),
-                  ),
-                  box(
-                    width = 4, height = "160px",
-                    solidHeader = TRUE,
-                    sliderTextInput(
-                      inputId = "conf_lvl1_dr",
-                      label = "Confidence Level:", 
-                      choices = c(0.10, 0.25, 0.50, 0.75, 0.80, 0.90, 0.95),
-                      selected = 0.95,
-                      grid = TRUE
+                    box(
+                      width = 4, height = "160px",
+                      solidHeader = TRUE,
+                      sliderTextInput(
+                        inputId = "conf_lvl1_dr",
+                        label = "Confidence Level:", 
+                        choices = c(0.10, 0.25, 0.50, 0.75, 0.80, 0.90, 0.95),
+                        selected = 0.95,
+                        grid = TRUE
+                      ),
+                      actionButton("run_bootstrap_dr", "Run Bootstrap", icon = icon("play"), style = 'width: 88%;')
                     ),
-                    actionButton("run_bootstrap_dr", "Run Bootstrap", icon = icon("play"), style = 'width: 88%;')
                   ),
                   fluidRow(
                     box(
@@ -351,17 +322,18 @@ body <- dashboardBody(
               condition = "input.modelType == 'DER'",
               tabsetPanel(
                 tabPanel(
-                  "ER Model",
+                  HTML("<span style='font-family: Georgia, serif;'>ER Model</span>"),
                   fluidRow(
                     box(
                       title = "ER Model: Fitted Curve with Data Points", status = "primary",
-                      solidHeader = TRUE, width = 6, height = "475px",
+                      solidHeader = TRUE, width = 6, # height = "475px",
                       withSpinner(plotOutput("ER_plot")),
                     ),
                     box(
                       title = "ER Model: Summary", status = "primary", 
                       solidHeader = TRUE, width = 6, # height = "475px",
-                      verbatimTextOutput("ER_summary")
+                      verbatimTextOutput("ER_summary"),
+                      downloadButton("download_ER_summary", "", style = "width: 15%;")
                     ),
                   ),
                   # ! ----------------------
@@ -373,16 +345,14 @@ body <- dashboardBody(
                       box(
                         title = "ER Model: Q-Q Plot of Residuals", 
                         status = "primary", 
-                        solidHeader = TRUE, width = 6, height = "475px",
+                        solidHeader = TRUE, width = 6, # height = "475px",
                         withSpinner(plotOutput("ER_qqplot")),
-                        "Add Box content here.", br(), "More content here."
                         ),
                       box(
                         title = "ER Model: Residuals vs Fitted Values Plot", 
                         status = "primary", 
-                        solidHeader = TRUE, width = 6, height = "475px",
+                        solidHeader = TRUE, width = 6, # height = "475px",
                         withSpinner(plotOutput("ER_ResFitplot")),
-                        "Add Box content here.", br(), "More content here."
                         ),
                       ),
                     ),
@@ -396,13 +366,12 @@ body <- dashboardBody(
                         title = "ER Model: ROC Curve", status = "primary", 
                         solidHeader = TRUE, width = 6, # height = "520px",
                         withSpinner(plotOutput("ER_ROCplot")),
-                        # textOutput("ER_AUC_text"),
                         ),
                     )
                   ),
                 ),
                 tabPanel(
-                  "DE Model",  # TODO: add model diagnostics here
+                  HTML("<span style='font-family: Georgia, serif;'>DE Model</span>"),
                   box(
                     title = NULL, solidHeader = TRUE,
                     width = 10, # height = "150px",
@@ -422,7 +391,8 @@ body <- dashboardBody(
                     box(
                       title = "DE Model: Summary", status = "success", 
                       solidHeader = TRUE, width = 6, # height = "475px",
-                      verbatimTextOutput("DE_summary")
+                      verbatimTextOutput("DE_summary"),
+                      downloadButton("download_DE_summary", "", style = "width: 15%;")
                     ),
                   ),
                   fluidRow(
@@ -439,7 +409,7 @@ body <- dashboardBody(
                   ),
                 ),
                 tabPanel(
-                  "DER",
+                  HTML("<span style='font-family: Georgia, serif;'>DER</span>"),
                   fluidRow(
                     box(
                       title = "DER Model: Fitted Curve with Data Points", 
@@ -451,12 +421,14 @@ body <- dashboardBody(
                   ),
                 ),
                 tabPanel(
-                  "Bootstrap",
-                  box(
-                    title = NULL, solidHeader = TRUE,
-                    width = 10, # height = "150px",
-                    uiOutput("select_covs_bootstrap"),
-                    uiOutput("select_covs_type_bootstrap"),
+                  HTML("<span style='font-family: Georgia, serif;'>Bootstrap</span>"),
+                  fluidRow(
+                    box(
+                      title = NULL, solidHeader = TRUE,
+                      width = 10, # height = "150px",
+                      uiOutput("select_covs_bootstrap"),
+                      uiOutput("select_covs_type_bootstrap"),
+                    ),
                   ),
                   fluidRow(
                     box(
@@ -513,24 +485,22 @@ body <- dashboardBody(
                       ),
                     )
                   ),
-                  box(
-                    title = "DER Model: Fitted Curve", status = "warning", 
-                    solidHeader = TRUE, width = 10,
-                    withSpinner(plotOutput("DER_bootstrapPlot")),
+                  fluidRow(
+                    box(
+                      title = "DER Model: Fitted Curve", status = "warning", 
+                      solidHeader = TRUE, width = 10,
+                      withSpinner(plotOutput("DER_bootstrapPlot")),
+                    ),
                   ),
                 ),
               )
             ),
           ),
-          tabPanel(
-            "Documentation",
-            includeMarkdown("doc.md")
-          )
         ),
       )
     ),
     tabItem(tabName = "tgi",
-      h1(HTML("<span style='color: green; font-family: Arial, sans-serif;margin-bottom: 10px; display: block;'>Tumor Growth Inhibition Model</span>")),
+      h1(HTML("<span style='color: #de4b39; font-family: Times, serif; margin-bottom: 10px; display: block;'>Tumor Growth Inhibition Model</span>")),
       fluidRow(
         box(
           solidHeader = TRUE, width = 4,
@@ -566,25 +536,42 @@ body <- dashboardBody(
         box(
           title = HTML("<strong>Model Summary</strong>"),
           solidHeader = TRUE, width = 6,
-          verbatimTextOutput("tgi_fit_summary")
+          verbatimTextOutput("tgi_fit_summary"),
+          downloadButton("download_tgi_summary", "", style = "width: 15%;")
         )
       ),
       fluidRow(
         box(
-          title = HTML("<strong>Model Fit</strong>"),
-          solidHeader = TRUE, width = 6,
-          plotOutput("tgi_fit_plot")
+          solidHeader = TRUE, width = 4,
+          uiOutput("select_subjects"),
         ),
         box(
-          title = HTML("<strong>Residuals</strong>"),
+          title = HTML("<strong>Model Fit</strong>"),
+          solidHeader = TRUE, width = 8,
+          plotOutput("tgi_fit_plot")
+        ),
+      ),
+      fluidRow(
+        box(
           solidHeader = TRUE, width = 6,
           plotOutput("tgi_resFitted")
+        ),
+        box(
+          solidHeader = TRUE, width = 6,
+          plotOutput("tgi_qqplot")
         )
-        
       )
+    ),
+    tabItem(tabName = "doc",
+      includeMarkdown("doc.md")
     )
   )
 )
 
 
-ui <- dashboardPage(header, siderbar, body)
+ui <- dashboardPage(
+  header, 
+  siderbar, 
+  body,
+  skin = "red",
+)
