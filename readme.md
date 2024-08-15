@@ -53,7 +53,7 @@ $$\log(C) = \alpha + \beta\log(d) + \varepsilon_C$$
 > $$
 > where $CL$ is the clearance, and is assumed to have a lognoremal distribution
 > $$\log(CL)\sim N(\log(TVCL), ~\sigma^2)$$
-> where $TVCL$ denotes the typical value of clearance.
+> where $TVCL$ denotes the typical value of clearance. [reference](https://www.ncbi.nlm.nih.gov/books/NBK12815/)
 
 
 

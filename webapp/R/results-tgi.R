@@ -1,13 +1,13 @@
 get_tgi_results <- function(df, input, output, selected = NULL) {
-    output$tgi_data_preview <- renderTable({
-        head(df, 10)
+    output$tgi_data <- renderDT({
+        datatable(df)
     })
 
     fit <- nlme(
-        Y ~ Y0 * (exp(g * TIME) + exp(-d * TIME) - 1) + bv,
+        Y ~ Y0 * (exp(g * TIME) + exp(-d * TIME) - 1),
         data = df,
         fixed = list(g ~ 1, d ~ 1),
-        random = bv ~ 1 | SUBJID,
+        random = list(SUBJID = pdDiag(g + d ~ 1)),
         start = c(g = 0.1, d = 1)
     )
     

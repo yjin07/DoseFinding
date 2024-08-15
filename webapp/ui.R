@@ -529,13 +529,13 @@ body <- dashboardBody(
       ),
       fluidRow(
         box(
-          title = HTML("<strong>Data Preview</strong>"),
-          solidHeader = TRUE, width = 6,
-          tableOutput("tgi_data_preview")
+          title = HTML("<strong>Source Data</strong>"),
+          solidHeader = TRUE, width = 5,
+          DTOutput("tgi_data")
         ),
         box(
           title = HTML("<strong>Model Summary</strong>"),
-          solidHeader = TRUE, width = 6,
+          solidHeader = TRUE, width = 7,
           verbatimTextOutput("tgi_fit_summary"),
           downloadButton("download_tgi_summary", "", style = "width: 15%;")
         )
