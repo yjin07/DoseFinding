@@ -166,7 +166,7 @@ generate_plots_cont <- function(der_data, der_data_all, er_summary, n_quantile) 
       geom_smooth(data = der_data_all,
                   aes(x = Exposure, y = Response),
                   color = "grey10",
-                  method = "lm") +
+                  method = "loess") +
       labs(x = "Exposure", y = "Response", color = "Dose Level") +
       scale_x_continuous(limits = c(-1, ceiling(max(der_data$Exposure) * 1.5 / 10) * 10))
     
