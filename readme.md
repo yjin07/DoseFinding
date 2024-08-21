@@ -90,6 +90,6 @@ We welcome contributions to improve the models and the Shiny application. Please
 
 
 ## Acknowledgments
-This work was conducted by the author (Yisen Jin) as a Biostatistics Dose Finding Intern at BeiGene, under the guidance of Chester Lin, Director of Biostatistics at BeiGene USA, Inc. Contributions were also made by Jun Wang, Rui (Terry) Liu, and Bo Wei, Biostatisticians at BeiGene.
+This work was conducted by the author (Yisen Jin) as a Biostatistics Dose Finding Intern at BeiGene, under the guidance of Chester Lin, Biostatistics director at BeiGene USA, Inc. Contributions were also made by Jun Wang, Rui (Terry) Liu, and Bo Wei, Biostatisticians at BeiGene.
 
 
