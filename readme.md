@@ -42,16 +42,16 @@ To facilitate the application of these models in clinical trials, we have develo
 
 ### File Structure
 ```
-├───webapp
+├───webapp/
 │   ├───app.R
 │   ├───global.R
 │   ├───ui.R
 │   ├───server.R
-│   ├───renv
-│   └───R
+│   ├───renv/
+│   └───R/
 │       ├───scripts
-│       └───utils
-├───data
+│       └───utils/
+├───data/
 ```
 
 
